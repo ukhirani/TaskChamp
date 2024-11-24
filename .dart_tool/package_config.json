@@ -92,6 +92,12 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "floating_bottom_navigation_bar",
+      "rootUri": "file:///C:/Users/ABC/AppData/Local/Pub/Cache/hosted/pub.dev/floating_bottom_navigation_bar-1.5.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "flutter",
       "rootUri": "file:///D:/Umang/Study/Codes/SEM5/CPMAD/FLUTTER/flutter_windows_3.22.3-stable/flutter/packages/flutter",
       "packageUri": "lib/",
@@ -548,7 +554,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2024-11-21T18:02:07.691229Z",
+  "generated": "2024-11-24T12:06:18.123729Z",
   "generator": "pub",
   "generatorVersion": "3.5.4",
   "flutterRoot": "file:///D:/Umang/Study/Codes/SEM5/CPMAD/FLUTTER/flutter_windows_3.22.3-stable/flutter",

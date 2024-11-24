@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '/index.dart';
+import '/main.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 export 'package:go_router/go_router.dart';
@@ -29,17 +30,48 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       initialLocation: '/',
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
-      errorBuilder: (context, state) => const HomePageWidget(),
+      errorBuilder: (context, state) => const LoginSignUpWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) => const HomePageWidget(),
+          builder: (context, _) => const LoginSignUpWidget(),
         ),
         FFRoute(
           name: 'HomePage',
           path: '/homePage',
-          builder: (context, params) => const HomePageWidget(),
+          builder: (context, params) => params.isEmpty
+              ? const NavBarPage(initialPage: 'HomePage')
+              : const NavBarPage(
+                  initialPage: 'HomePage',
+                  page: HomePageWidget(),
+                ),
+        ),
+        FFRoute(
+          name: 'TaskCreation',
+          path: '/taskCreation',
+          builder: (context, params) => params.isEmpty
+              ? const NavBarPage(initialPage: 'TaskCreation')
+              : const TaskCreationWidget(),
+        ),
+        FFRoute(
+          name: 'RoutineList',
+          path: '/routineList',
+          builder: (context, params) => params.isEmpty
+              ? const NavBarPage(initialPage: 'RoutineList')
+              : const RoutineListWidget(),
+        ),
+        FFRoute(
+          name: 'ChampMode',
+          path: '/champMode',
+          builder: (context, params) => params.isEmpty
+              ? const NavBarPage(initialPage: 'ChampMode')
+              : const ChampModeWidget(),
+        ),
+        FFRoute(
+          name: 'LoginSignUp',
+          path: '/loginSignUp',
+          builder: (context, params) => const LoginSignUpWidget(),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
