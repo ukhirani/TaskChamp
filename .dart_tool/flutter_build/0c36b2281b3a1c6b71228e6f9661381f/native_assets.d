@@ -1,0 +1,1 @@
+ D:\\Umang\\Study\\Projects\\taskchamp\\.dart_tool\\flutter_build\\0c36b2281b3a1c6b71228e6f9661381f\\native_assets.yaml: 
