@@ -1,6 +1,12 @@
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:task_champ/flutter_flow/flutter_flow_util.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../index.dart';
 
 class LoginSignUpController extends GetxController {
   var email = ''.obs;
@@ -12,20 +18,16 @@ class LoginSignUpController extends GetxController {
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final confirmPasswordController =
-      TextEditingController(); // Added confirm password controller
+  final confirmPasswordController = TextEditingController();
 
-  // Toggles password visibility
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 
-  // Toggles confirm password visibility
   void toggleConfirmPasswordVisibility() {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
   }
 
-  // Email Validator
   String? emailValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Email is required';
@@ -36,7 +38,6 @@ class LoginSignUpController extends GetxController {
     return null;
   }
 
-  // Password Validator
   String? passwordValidator(String? value) {
     if (value == null || value.isEmpty) {
       return 'Password is required';
@@ -46,7 +47,6 @@ class LoginSignUpController extends GetxController {
     return null;
   }
 
-  // Confirm Password Validator
   String? confirmPasswordValidator(String? value) {
     if (value == null || value.isEmpty) {
       return 'Confirm Password is required';
@@ -56,7 +56,6 @@ class LoginSignUpController extends GetxController {
     return null;
   }
 
-  // Sign up user
   Future<void> signupUser() async {
     if (emailController.text.isEmpty ||
         passwordController.text.isEmpty ||
@@ -73,10 +72,25 @@ class LoginSignUpController extends GetxController {
     isLoading.value = true;
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
+      String uid = userCredential.user!.uid;
+
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'UID': uid,
+        'date_joined': FieldValue.serverTimestamp(),
+        'location': GeoPoint(position.latitude, position.longitude),
+        'name': 'Umang',
+      });
+
+      await sendMail(userCredential.user!.email!);
 
       Get.snackbar('Success', 'Signup Successful');
       Get.offAllNamed('/dashboard');
@@ -87,16 +101,48 @@ class LoginSignUpController extends GetxController {
     }
   }
 
-  // Login user
+  Future<void> sendMail(String toEmail) async {
+    final subject = 'Account Creation Acknowledgement';
+    final body = 'Dear $toEmail,\n\n'
+        'Thank you for creating an account with us. We are excited to have you on board.\n\n'
+        'Best regards,\n'
+        'Your App Name';
+
+    try {
+      await FirebaseAuth.instance.currentUser!.sendEmailVerification();
+      Get.snackbar('Success', 'Acknowledgement email sent successfully');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to send acknowledgement email');
+    }
+  }
+
   Future<void> login() async {
     isLoading.value = true;
 
     try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null && !user.emailVerified) {
+        await user.reload();
+        if (!user.emailVerified) {
+          Get.snackbar(
+            'Error',
+            'Please verify your email first.',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+          isLoading.value = false;
+          return;
+        }
+      }
+
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email.value.trim(),
         password: password.value.trim(),
       );
 
+      isLoading.value = true;
+      await Future.delayed(Duration(seconds: 2));
       Get.snackbar(
         'Success',
         'Login successful!',
@@ -104,6 +150,10 @@ class LoginSignUpController extends GetxController {
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
+      isLoading.value = true;
+      await Future.delayed(Duration(seconds: 2));
+      isLoading.value = false;
+      Get.offAll(const HomePageWidget());
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
