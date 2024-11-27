@@ -1,3 +1,5 @@
+import 'package:task_champ/components/navbar_widget.dart';
+
 import '/components/task_tile_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';

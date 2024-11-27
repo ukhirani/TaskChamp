@@ -27,7 +27,7 @@ abstract class FlutterFlowTheme {
   static FlutterFlowTheme of(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? DarkModeTheme()
-        : LightModeTheme();
+        : DarkModeTheme();
   }
 
   @Deprecated('Use primary instead')

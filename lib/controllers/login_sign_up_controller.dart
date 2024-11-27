@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:task_champ/components/navbar_widget.dart';
 import 'package:task_champ/flutter_flow/flutter_flow_util.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -93,7 +94,7 @@ class LoginSignUpController extends GetxController {
       await sendMail(userCredential.user!.email!);
 
       Get.snackbar('Success', 'Signup Successful');
-      Get.offAllNamed('/dashboard');
+      //hello
     } catch (e) {
       Get.snackbar('Error', e.toString());
     } finally {
@@ -120,26 +121,27 @@ class LoginSignUpController extends GetxController {
     isLoading.value = true;
 
     try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email.value.trim(),
+        password: password.value.trim(),
+      );
+
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null && !user.emailVerified) {
         await user.reload();
         if (!user.emailVerified) {
+          await user.sendEmailVerification();
           Get.snackbar(
-            'Error',
+            'Info',
             'Please verify your email first.',
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.blue,
             colorText: Colors.white,
           );
           isLoading.value = false;
           return;
         }
       }
-
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email.value.trim(),
-        password: password.value.trim(),
-      );
 
       isLoading.value = true;
       await Future.delayed(Duration(seconds: 2));
@@ -153,7 +155,9 @@ class LoginSignUpController extends GetxController {
       isLoading.value = true;
       await Future.delayed(Duration(seconds: 2));
       isLoading.value = false;
-      Get.offAll(const HomePageWidget());
+      Get.offAll(NavBarPage(
+        initialPage: 'HomePage',
+      ));
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
