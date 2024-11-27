@@ -47,6 +47,7 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        extendBody: true,
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         appBar: AppBar(
@@ -63,7 +64,7 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
               size: 30.0,
             ),
             onPressed: () async {
-              context.pushNamed('HomePage');
+              context.pushNamed('HomePageWidget');
             },
           ),
           title: Text(

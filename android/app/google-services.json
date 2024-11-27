@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "22024792739",
+    "project_id": "task-champ-ex9kwk",
+    "storage_bucket": "task-champ-ex9kwk.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:22024792739:android:25da1732cb03be5f16ad16",
+        "android_client_info": {
+          "package_name": "com.umanghirani.taskchamp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDstU1gj00gNjyiZF2narjiQxG6tDmE4RI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

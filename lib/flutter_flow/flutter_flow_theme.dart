@@ -27,7 +27,7 @@ abstract class FlutterFlowTheme {
   static FlutterFlowTheme of(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? DarkModeTheme()
-        : LightModeTheme();
+        : DarkModeTheme();
   }
 
   @Deprecated('Use primary instead')
@@ -297,8 +297,8 @@ class DarkModeTheme extends FlutterFlowTheme {
   Color get tertiaryColor => tertiary;
 
   late Color primary = const Color(0xFFBDFFA5);
-  late Color secondary = const Color(0xFF928163);
-  late Color tertiary = const Color(0xFF6D604A);
+  late Color secondary = const Color.fromARGB(255, 129, 196, 113);
+  late Color tertiary = const Color.fromARGB(205, 77, 124, 85);
   late Color alternate = const Color(0xFF17282E);
   late Color primaryText = const Color(0xFFFFFFFF);
   late Color secondaryText = const Color(0xFF658593);
