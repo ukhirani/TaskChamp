@@ -54,17 +54,17 @@ class _HomePageWidgetState extends State<HomePageWidget>
             mainAxisSize: MainAxisSize.max,
             children: [
               AnimatedContainer(
-                duration: const Duration(milliseconds: 100),
+                duration: Duration(milliseconds: 100),
                 curve: Curves.easeIn,
                 width: double.infinity,
-                height: 138.0,
+                height: 138,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).primaryBackground,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(27.0),
-                    bottomRight: Radius.circular(27.0),
-                    topLeft: Radius.circular(0.0),
-                    topRight: Radius.circular(0.0),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(27),
+                    bottomRight: Radius.circular(27),
+                    topLeft: Radius.circular(0),
+                    topRight: Radius.circular(0),
                   ),
                   shape: BoxShape.rectangle,
                   border: Border.all(
@@ -72,16 +72,16 @@ class _HomePageWidgetState extends State<HomePageWidget>
                   ),
                 ),
                 child: Align(
-                  alignment: const AlignmentDirectional(0.0, 1.0),
+                  alignment: AlignmentDirectional(0, 1),
                   child: Container(
                     width: double.infinity,
-                    height: 100.0,
-                    decoration: const BoxDecoration(
+                    height: 100,
+                    decoration: BoxDecoration(
                       borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(30.0),
-                        bottomRight: Radius.circular(30.0),
-                        topLeft: Radius.circular(0.0),
-                        topRight: Radius.circular(0.0),
+                        bottomLeft: Radius.circular(30),
+                        bottomRight: Radius.circular(30),
+                        topLeft: Radius.circular(0),
+                        topRight: Radius.circular(0),
                       ),
                     ),
                     child: Column(
@@ -92,55 +92,54 @@ class _HomePageWidgetState extends State<HomePageWidget>
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              width: 91.0,
-                              height: 47.0,
-                              decoration: const BoxDecoration(),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Padding(
-                                    padding:
-                                        const EdgeInsetsDirectional.fromSTEB(
-                                            13.0, 0.0, 0.0, 0.0),
-                                    child: Text(
-                                      'March',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            fontSize: 20.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                            Flexible(
+                              child: Container(
+                                height: 47,
+                                decoration: BoxDecoration(),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          13, 0, 0, 0),
+                                      child: Text(
+                                        'March',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              fontSize: 20,
+                                              letterSpacing: 0.0,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
                                     ),
-                                  ),
-                                  FlutterFlowIconButton(
-                                    borderRadius: 0.0,
-                                    buttonSize: 40.0,
-                                    icon: Icon(
-                                      Icons.keyboard_arrow_down,
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      size: 24.0,
+                                    FlutterFlowIconButton(
+                                      borderRadius: 0,
+                                      buttonSize: 40,
+                                      icon: Icon(
+                                        Icons.keyboard_arrow_down,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryText,
+                                        size: 24,
+                                      ),
+                                      onPressed: () {
+                                        print('IconButton pressed ...');
+                                      },
                                     ),
-                                    onPressed: () {
-                                      print('IconButton pressed ...');
-                                    },
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 10.0, 0.0),
+                              padding:
+                                  EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
                               child: Container(
-                                width: 40.0,
-                                height: 40.0,
+                                width: 40,
+                                height: 40,
                                 clipBehavior: Clip.antiAlias,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                 ),
                                 child: Image.network(
@@ -152,172 +151,53 @@ class _HomePageWidgetState extends State<HomePageWidget>
                           ],
                         ),
                         Align(
-                          alignment: const AlignmentDirectional(0.0, 0.0),
+                          alignment: AlignmentDirectional(0, 0),
                           child: Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                14.0, 4.0, 14.0, 9.0),
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(14, 4, 14, 9),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Container(
-                                  width: 30.0,
-                                  height: 30.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Align(
-                                    alignment:
-                                        const AlignmentDirectional(0.0, 0.0),
-                                    child: Text(
-                                      'Sun',
-                                      textAlign: TextAlign.center,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w300,
-                                          ),
+                                for (var day in [
+                                  'Sun',
+                                  'Mon',
+                                  'Tue',
+                                  '25',
+                                  'Thu',
+                                  'Fri',
+                                  'Sat',
+                                ])
+                                  Container(
+                                    width: 30,
+                                    height: 30,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: day == '25'
+                                          ? FlutterFlowTheme.of(context).primary
+                                          : null,
+                                    ),
+                                    child: Align(
+                                      alignment: AlignmentDirectional(0, 0),
+                                      child: Text(
+                                        day,
+                                        textAlign: TextAlign.center,
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              fontFamily: 'Plus Jakarta Sans',
+                                              color: day == '25'
+                                                  ? FlutterFlowTheme.of(context)
+                                                      .primaryBackground
+                                                  : null,
+                                              letterSpacing: 0.0,
+                                              fontWeight: day == '25'
+                                                  ? FontWeight.w600
+                                                  : FontWeight.normal,
+                                            ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Container(
-                                  width: 30.0,
-                                  height: 30.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Align(
-                                    alignment:
-                                        const AlignmentDirectional(0.0, 0.0),
-                                    child: Text(
-                                      'Mon',
-                                      textAlign: TextAlign.center,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.normal,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: 30.0,
-                                  height: 30.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Align(
-                                    alignment:
-                                        const AlignmentDirectional(0.0, 0.0),
-                                    child: Text(
-                                      'Tue',
-                                      textAlign: TextAlign.center,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.normal,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: 30.0,
-                                  height: 30.0,
-                                  decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Align(
-                                    alignment:
-                                        const AlignmentDirectional(0.0, 0.0),
-                                    child: Text(
-                                      '25',
-                                      textAlign: TextAlign.center,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryBackground,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: 30.0,
-                                  height: 30.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Align(
-                                    alignment:
-                                        const AlignmentDirectional(0.0, 0.0),
-                                    child: Text(
-                                      'Thu',
-                                      textAlign: TextAlign.center,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.normal,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: 30.0,
-                                  height: 30.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Align(
-                                    alignment:
-                                        const AlignmentDirectional(0.0, 0.0),
-                                    child: Text(
-                                      'Fri',
-                                      textAlign: TextAlign.center,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.normal,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: 30.0,
-                                  height: 30.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Align(
-                                    alignment:
-                                        const AlignmentDirectional(0.0, 0.0),
-                                    child: Text(
-                                      'Sat',
-                                      textAlign: TextAlign.center,
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Plus Jakarta Sans',
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w300,
-                                          ),
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                           ),

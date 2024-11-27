@@ -7,6 +7,11 @@ import '/flutter_flow/form_field_controller.dart';
 import 'package:flutter/material.dart';
 import '../models/task_creation_model.dart';
 export '../models/task_creation_model.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
+import '../controllers/task_creation_contorller.dart';
 
 class TaskCreationWidget extends StatefulWidget {
   const TaskCreationWidget({super.key});
@@ -17,6 +22,7 @@ class TaskCreationWidget extends StatefulWidget {
 
 class _TaskCreationWidgetState extends State<TaskCreationWidget> {
   late TaskCreationModel _model;
+  final TaskController taskController = Get.put(TaskController());
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -56,7 +62,7 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Create Task',
+                'Create a New Task',
                 style: FlutterFlowTheme.of(context).headlineMedium.override(
                       fontFamily: 'Urbanist',
                       letterSpacing: 0.0,
@@ -310,17 +316,18 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                   ),
                                   FlutterFlowChoiceChips(
                                     options: const [
-                                      ChipData('Product Design'),
-                                      ChipData('FlutterFlow'),
-                                      ChipData('UI Design'),
-                                      ChipData('Web Design')
+                                      ChipData('Fitness'),
+                                      ChipData('Wellness'),
+                                      ChipData('Work'),
+                                      ChipData('Hobby'),
+                                      ChipData('Family')
                                     ],
                                     onChanged: (val) => safeSetState(() =>
                                         _model.choiceChipsValue =
                                             val?.firstOrNull),
                                     selectedChipStyle: ChipStyle(
                                       backgroundColor:
-                                          FlutterFlowTheme.of(context).accent2,
+                                          FlutterFlowTheme.of(context).tertiary,
                                       textStyle: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
@@ -368,7 +375,7 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                     controller:
                                         _model.choiceChipsValueController ??=
                                             FormFieldController<List<String>>(
-                                      ['Product Design'],
+                                      ['Fitness'],
                                     ),
                                     wrapped: true,
                                   ),
@@ -387,11 +394,12 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      final datePickedDate =
+                                      final DateTime? picked =
                                           await showDatePicker(
                                         context: context,
-                                        initialDate: getCurrentTimestamp,
-                                        firstDate: getCurrentTimestamp,
+                                        initialDate:
+                                            _model.datePicked ?? DateTime.now(),
+                                        firstDate: DateTime.now(),
                                         lastDate: DateTime(2050),
                                         builder: (context, child) {
                                           return wrapInMaterialDatePickerTheme(
@@ -399,7 +407,7 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                             child!,
                                             headerBackgroundColor:
                                                 FlutterFlowTheme.of(context)
-                                                    .primary,
+                                                    .primaryBackground,
                                             headerForegroundColor:
                                                 FlutterFlowTheme.of(context)
                                                     .info,
@@ -421,7 +429,7 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                                     .primaryText,
                                             selectedDateTimeBackgroundColor:
                                                 FlutterFlowTheme.of(context)
-                                                    .primary,
+                                                    .secondary,
                                             selectedDateTimeForegroundColor:
                                                 FlutterFlowTheme.of(context)
                                                     .info,
@@ -433,14 +441,28 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                         },
                                       );
 
-                                      if (datePickedDate != null) {
-                                        safeSetState(() {
-                                          _model.datePicked = DateTime(
-                                            datePickedDate.year,
-                                            datePickedDate.month,
-                                            datePickedDate.day,
+                                      if (picked != null) {
+                                        final TimeOfDay? timePicked =
+                                            await showTimePicker(
+                                          context: context,
+                                          initialTime: TimeOfDay.fromDateTime(
+                                              _model.datePicked ??
+                                                  DateTime.now()),
+                                        );
+
+                                        if (timePicked != null) {
+                                          final DateTime datePicked = DateTime(
+                                            picked.year,
+                                            picked.month,
+                                            picked.day,
+                                            timePicked.hour,
+                                            timePicked.minute,
                                           );
-                                        });
+
+                                          safeSetState(() {
+                                            _model.datePicked = datePicked;
+                                          });
+                                        }
                                       }
                                     },
                                     child: Container(
@@ -465,9 +487,9 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                               .fromSTEB(12.0, 0.0, 0.0, 0.0),
                                           child: Text(
                                             valueOrDefault<String>(
-                                              dateTimeFormat(
-                                                  "MMMEd", _model.datePicked),
-                                              'Select a date',
+                                              dateTimeFormat("MMMEd HH:mm",
+                                                  _model.datePicked),
+                                              'Select a date and time',
                                             ),
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
@@ -493,9 +515,22 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                               16.0, 12.0, 16.0, 12.0),
                           child: FFButtonWidget(
                             onPressed: () {
-                              print('Button pressed ...');
+                              // Call the controller method here
+                              // Assuming you will create a TaskController with a method addTask
+                              final taskController = Get.find<
+                                  TaskController>(); // Get the controller
+                              taskController.addTask(
+                                title: _model.taskTextController.text,
+                                description:
+                                    _model.descriptionTextController.text,
+                                tags: _model
+                                    .choiceChipsValue, // Assuming this is the selected tag
+                                dueDate: _model.datePicked,
+                                isCompleted: false,
+                                isRoutine: false,
+                              );
                             },
-                            text: 'Get Started',
+                            text: 'Add Task',
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 48.0,

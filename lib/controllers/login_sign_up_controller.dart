@@ -117,9 +117,10 @@ class LoginSignUpController extends GetxController {
   }
 
   Future<void> login() async {
-    // Check if user is already logged in
-
-    isLoading.value = true;
+    if (email.value.trim().isEmpty || password.value.trim().isEmpty) {
+      Get.snackbar('Error', 'Please fill all fields');
+      return;
+    }
 
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -144,6 +145,8 @@ class LoginSignUpController extends GetxController {
       }
 
       // Set the login status to true in shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
 
       Get.snackbar(
         'Success',
@@ -155,7 +158,7 @@ class LoginSignUpController extends GetxController {
       Get.offAll(() => NavBarPage(initialPage: 'HomePage'));
     } on FirebaseAuthException catch (e) {
       handleAuthError(e.code);
-    } catch (_) {
+    } catch (e) {
       Get.snackbar(
         'Error',
         'An unexpected error occurred.',
