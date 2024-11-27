@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:task_champ/components/navbar_widget.dart';
-import 'package:task_champ/flutter_flow/flutter_flow_util.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../index.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:task_champ/index.dart';
 
 class LoginSignUpController extends GetxController {
   var email = ''.obs;
@@ -118,6 +117,8 @@ class LoginSignUpController extends GetxController {
   }
 
   Future<void> login() async {
+    // Check if user is already logged in
+
     isLoading.value = true;
 
     try {
@@ -138,13 +139,12 @@ class LoginSignUpController extends GetxController {
             backgroundColor: Colors.blue,
             colorText: Colors.white,
           );
-          isLoading.value = false;
           return;
         }
       }
 
-      isLoading.value = true;
-      await Future.delayed(Duration(seconds: 2));
+      // Set the login status to true in shared preferences
+
       Get.snackbar(
         'Success',
         'Login successful!',
@@ -152,45 +152,10 @@ class LoginSignUpController extends GetxController {
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
-      isLoading.value = true;
-      await Future.delayed(Duration(seconds: 2));
-      isLoading.value = false;
-      Get.offAll(NavBarPage(
-        initialPage: 'HomePage',
-      ));
+      Get.offAll(() => NavBarPage(initialPage: 'HomePage'));
     } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      switch (e.code) {
-        case 'invalid-email':
-          errorMessage = 'The email address is not valid.';
-          break;
-        case 'user-not-found':
-          errorMessage = 'No user found for that email.';
-          break;
-        case 'wrong-password':
-          errorMessage = 'Incorrect password.';
-          break;
-        case 'user-disabled':
-          errorMessage = 'This user account has been disabled.';
-          break;
-        case 'too-many-requests':
-          errorMessage = 'Too many requests. Please try again later.';
-          break;
-        case 'operation-not-allowed':
-          errorMessage = 'Email/password accounts are not enabled.';
-          break;
-        default:
-          errorMessage = 'Login failed. Please try again.';
-      }
-
-      Get.snackbar(
-        'Error',
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } catch (e) {
+      handleAuthError(e.code);
+    } catch (_) {
       Get.snackbar(
         'Error',
         'An unexpected error occurred.',
@@ -201,5 +166,46 @@ class LoginSignUpController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void handleAuthError(String code) {
+    String errorMessage;
+    switch (code) {
+      case 'invalid-email':
+        errorMessage = 'The email address is not valid.';
+        break;
+      case 'user-not-found':
+        errorMessage = 'No user found for that email.';
+        break;
+      case 'wrong-password':
+        errorMessage = 'Incorrect password.';
+        break;
+      case 'user-disabled':
+        errorMessage = 'This user account has been disabled.';
+        break;
+      case 'too-many-requests':
+        errorMessage = 'Too many requests. Please try again later.';
+        break;
+      case 'operation-not-allowed':
+        errorMessage = 'Email/password accounts are not enabled.';
+        break;
+      default:
+        errorMessage = 'Login failed. Please try again.';
+    }
+
+    Get.snackbar(
+      'Error',
+      errorMessage,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  }
+
+  Future<void> logout() async {
+    await FirebaseAuth.instance.signOut();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false); // Clear login status
+    Get.offAll(() => LoginSignUpWidget()); // Navigate to login page
   }
 }
