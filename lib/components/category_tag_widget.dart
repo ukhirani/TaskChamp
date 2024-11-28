@@ -5,7 +5,9 @@ import 'category_tag_model.dart';
 export 'category_tag_model.dart';
 
 class CategoryTagWidget extends StatefulWidget {
-  const CategoryTagWidget({super.key});
+  final String category; // Add a category parameter
+
+  const CategoryTagWidget({Key? key, required this.category}) : super(key: key);
 
   @override
   State<CategoryTagWidget> createState() => _CategoryTagWidgetState();
@@ -31,48 +33,42 @@ class _CategoryTagWidgetState extends State<CategoryTagWidget> {
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 2.0, 2.0),
+      padding: EdgeInsetsDirectional.fromSTEB(0, 2, 2, 2),
       child: Container(
-        width: 60.0,
-        height: 22.0,
+        width: 60,
+        height: 22,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).primaryText,
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(20.0),
-            bottomRight: Radius.circular(20.0),
-            topLeft: Radius.circular(20.0),
-            topRight: Radius.circular(20.0),
-          ),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: FlutterFlowTheme.of(context).primaryBackground,
-            width: 1.0,
+            width: 1,
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(2.0),
+          padding: EdgeInsets.all(2),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
               Icon(
                 Icons.circle,
                 color: FlutterFlowTheme.of(context).primaryBackground,
-                size: 15.0,
+                size: 15,
               ),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(2.0, 0.0, 0.0, 0.0),
+                padding: EdgeInsetsDirectional.fromSTEB(2, 0, 0, 0),
                 child: Text(
-                  'Fitness',
+                  widget.category, // Use the category value here
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'Plus Jakarta Sans',
                         color: FlutterFlowTheme.of(context).primaryBackground,
-                        fontSize: 10.0,
+                        fontSize: 10,
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.normal,
                       ),

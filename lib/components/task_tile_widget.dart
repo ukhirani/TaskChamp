@@ -1,41 +1,25 @@
-import '/components/category_tag_widget.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
-import 'task_tile_model.dart';
-export 'task_tile_model.dart';
+import 'package:get/get.dart';
+import 'package:task_champ/components/category_tag_widget.dart';
+import 'package:task_champ/controllers/task_creation_contorller.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
 
-class TaskTileWidget extends StatefulWidget {
-  const TaskTileWidget({super.key});
+final TaskController _taskController = Get.put(TaskController());
 
-  @override
-  State<TaskTileWidget> createState() => _TaskTileWidgetState();
-}
+class TaskTileWidget extends StatelessWidget {
+  final String title;
+  final List<String> tags;
+  final DateTime dueDate;
+  final bool isCompleted;
 
-class _TaskTileWidgetState extends State<TaskTileWidget> {
-  late TaskTileModel _model;
-
-  @override
-  void setState(VoidCallback callback) {
-    super.setState(callback);
-    _model.onUpdate();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _model = createModel(context, () => TaskTileModel());
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _model.maybeDispose();
-
-    super.dispose();
-  }
+  const TaskTileWidget({
+    super.key,
+    required this.title,
+    required this.tags,
+    required this.dueDate,
+    required this.isCompleted,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -56,38 +40,37 @@ class _TaskTileWidgetState extends State<TaskTileWidget> {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
-                  child: Text(
-                    'Daily Step Goal ',
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          fontFamily: 'Plus Jakarta Sans',
-                          color: FlutterFlowTheme.of(context).primaryBackground,
-                          fontSize: 40.0,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 10.0, 0.0, 0.0),
+                      child: Text(
+                        title,
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily: 'Plus Jakarta Sans',
+                              color: FlutterFlowTheme.of(context)
+                                  .primaryBackground,
+                              fontSize: 40.0,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        // Calculate the maximum width available for the text
+                        softWrap: false,
+                      ),
+                    );
+                  },
                 ),
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 6.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
-                    children: [
-                      wrapWithModel(
-                        model: _model.categoryTagModel1,
-                        updateCallback: () => safeSetState(() {}),
-                        child: const CategoryTagWidget(),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(1.0),
-                        child: wrapWithModel(
-                          model: _model.categoryTagModel2,
-                          updateCallback: () => safeSetState(() {}),
-                          child: const CategoryTagWidget(),
-                        ),
-                      ),
-                    ],
+                    children: tags.map((tag) {
+                      return CategoryTagWidget(category: tag);
+                    }).toList(),
                   ),
                 ),
               ],
@@ -101,26 +84,33 @@ class _TaskTileWidgetState extends State<TaskTileWidget> {
                 Align(
                   alignment: const AlignmentDirectional(0.0, 0.0),
                   child: Padding(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 10.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 5.0, 10.0, 0.0),
                     child: FlutterFlowIconButton(
                       buttonSize: 45.0,
-                      fillColor: FlutterFlowTheme.of(context).primary,
+                      fillColor: isCompleted
+                          ? FlutterFlowTheme.of(context).primary
+                          : FlutterFlowTheme.of(context).primary,
                       icon: Icon(
-                        Icons.circle,
-                        color: FlutterFlowTheme.of(context).alternate,
+                        isCompleted ? Icons.check_circle : Icons.circle,
+                        color: isCompleted
+                            ? FlutterFlowTheme.of(context).primaryBackground
+                            : FlutterFlowTheme.of(context).alternate,
                         size: 50.0,
                       ),
                       onPressed: () {
-                        print('IconButton pressed ...');
+                        print('Task marked as completed: $title');
+                        _taskController.updateTaskInDatabase(
+                            dueDate, title, isCompleted);
                       },
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(10.0, 20.0, 0.0, 0.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                      10.0, 20.0, 0.0, 0.0),
                   child: Text(
-                    '9.30 AM',
+                    '${dueDate.hour}:${dueDate.minute.toString().padLeft(2, '0')} ${dueDate.hour < 12 ? "AM" : "PM"}',
                     textAlign: TextAlign.end,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Plus Jakarta Sans',

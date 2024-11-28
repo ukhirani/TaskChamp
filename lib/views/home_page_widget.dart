@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 import 'package:task_champ/components/navbar_widget.dart';
+import 'package:task_champ/controllers/task_creation_contorller.dart';
 
 import '/components/task_tile_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -15,15 +18,24 @@ class HomePageWidget extends StatefulWidget {
   State<HomePageWidget> createState() => _HomePageWidgetState();
 }
 
+DateTime today = DateTime.now();
+ValueNotifier<DateTime> selectedDate = ValueNotifier<DateTime>(today);
+
 class _HomePageWidgetState extends State<HomePageWidget>
     with TickerProviderStateMixin {
   late HomePageModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final TaskController _taskController = Get.put(TaskController());
+
+  DateTime today = DateTime.now();
+  late DateTime selectedDate;
+
   @override
   void initState() {
     super.initState();
+    selectedDate = today; // Initialize with today
     _model = createModel(context, () => HomePageModel());
 
     _model.tabBarController = TabController(
@@ -43,6 +55,8 @@ class _HomePageWidgetState extends State<HomePageWidget>
 
   @override
   Widget build(BuildContext context) {
+    _taskController.listenToTasksForDate(selectedDate);
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: WillPopScope(
@@ -66,7 +80,6 @@ class _HomePageWidgetState extends State<HomePageWidget>
                     topLeft: Radius.circular(0),
                     topRight: Radius.circular(0),
                   ),
-                  shape: BoxShape.rectangle,
                   border: Border.all(
                     color: FlutterFlowTheme.of(context).primary,
                   ),
@@ -95,7 +108,6 @@ class _HomePageWidgetState extends State<HomePageWidget>
                             Flexible(
                               child: Container(
                                 height: 47,
-                                decoration: BoxDecoration(),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
@@ -104,13 +116,44 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           13, 0, 0, 0),
                                       child: Text(
-                                        'March',
+                                        DateTime.now().month == 1
+                                            ? 'January'
+                                            : DateTime.now().month == 2
+                                                ? 'February'
+                                                : DateTime.now().month == 3
+                                                    ? 'March'
+                                                    : DateTime.now().month == 4
+                                                        ? 'April'
+                                                        : DateTime.now()
+                                                                    .month ==
+                                                                5
+                                                            ? 'May'
+                                                            : DateTime.now()
+                                                                        .month ==
+                                                                    6
+                                                                ? 'June'
+                                                                : DateTime.now()
+                                                                            .month ==
+                                                                        7
+                                                                    ? 'July'
+                                                                    : DateTime.now().month ==
+                                                                            8
+                                                                        ? 'August'
+                                                                        : DateTime.now().month ==
+                                                                                9
+                                                                            ? 'September'
+                                                                            : DateTime.now().month == 10
+                                                                                ? 'October'
+                                                                                : DateTime.now().month == 11
+                                                                                    ? 'November'
+                                                                                    : DateTime.now().month == 12
+                                                                                        ? 'December'
+                                                                                        : '', // Update dynamically if needed
                                         style: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
                                               fontFamily: 'Plus Jakarta Sans',
                                               fontSize: 20,
-                                              letterSpacing: 0.0,
                                               fontWeight: FontWeight.bold,
                                             ),
                                       ),
@@ -125,7 +168,67 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                         size: 24,
                                       ),
                                       onPressed: () {
-                                        print('IconButton pressed ...');
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: Text('Select Month'),
+                                              content: SizedBox(
+                                                width: 200,
+                                                child: DropdownButtonFormField(
+                                                  isExpanded: true,
+                                                  decoration: InputDecoration(
+                                                    border:
+                                                        OutlineInputBorder(),
+                                                  ),
+                                                  items: [
+                                                    'January',
+                                                    'February',
+                                                    'March',
+                                                    'April',
+                                                    'May',
+                                                    'June',
+                                                    'July',
+                                                    'August',
+                                                    'September',
+                                                    'October',
+                                                    'November',
+                                                    'December',
+                                                  ].map((month) {
+                                                    return DropdownMenuItem(
+                                                      child: Text(month),
+                                                      value: month,
+                                                    );
+                                                  }).toList(),
+                                                  onChanged: (value) {
+                                                    Navigator.of(context).pop();
+                                                    setState(() {
+                                                      selectedDate = DateTime(
+                                                        DateTime.now().year,
+                                                        [
+                                                              'January',
+                                                              'February',
+                                                              'March',
+                                                              'April',
+                                                              'May',
+                                                              'June',
+                                                              'July',
+                                                              'August',
+                                                              'September',
+                                                              'October',
+                                                              'November',
+                                                              'December',
+                                                            ].indexOf(value!) +
+                                                            1,
+                                                        selectedDate.day,
+                                                      );
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
                                       },
                                     ),
                                   ],
@@ -158,47 +261,54 @@ class _HomePageWidgetState extends State<HomePageWidget>
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                for (var day in [
-                                  'Sun',
-                                  'Mon',
-                                  'Tue',
-                                  '25',
-                                  'Thu',
-                                  'Fri',
-                                  'Sat',
-                                ])
-                                  Container(
-                                    width: 30,
-                                    height: 30,
+                              children: List.generate(7, (index) {
+                                DateTime day = today.add(Duration(
+                                    days: index -
+                                        today.weekday +
+                                        1)); // Start from Sunday
+                                bool isSelected = day.day == selectedDate.day &&
+                                    day.month == selectedDate.month;
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedDate = day;
+                                      print(selectedDate);
+                                    });
+                                  },
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: day == '25'
+                                      color: isSelected
                                           ? FlutterFlowTheme.of(context).primary
                                           : null,
                                     ),
                                     child: Align(
                                       alignment: AlignmentDirectional(0, 0),
                                       child: Text(
-                                        day,
+                                        isSelected
+                                            ? day.day.toString()
+                                            : DateFormat('EEE').format(day),
                                         textAlign: TextAlign.center,
                                         style: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .override(
                                               fontFamily: 'Plus Jakarta Sans',
-                                              color: day == '25'
+                                              color: isSelected
                                                   ? FlutterFlowTheme.of(context)
                                                       .primaryBackground
                                                   : null,
-                                              letterSpacing: 0.0,
-                                              fontWeight: day == '25'
-                                                  ? FontWeight.w600
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
                                                   : FontWeight.normal,
                                             ),
                                       ),
                                     ),
                                   ),
-                              ],
+                                );
+                              }),
                             ),
                           ),
                         ),
@@ -248,68 +358,56 @@ class _HomePageWidgetState extends State<HomePageWidget>
                       child: TabBarView(
                         controller: _model.tabBarController,
                         children: [
-                          ListView(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            scrollDirection: Axis.vertical,
-                            children: [
-                              wrapWithModel(
-                                model: _model.taskTileModel1,
-                                updateCallback: () => safeSetState(() {}),
-                                child: const Hero(
-                                  tag: 'TaskTile',
-                                  transitionOnUserGestures: true,
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: TaskTileWidget(),
-                                  ),
-                                ),
-                              ),
-                              wrapWithModel(
-                                model: _model.taskTileModel2,
-                                updateCallback: () => safeSetState(() {}),
-                                child: const TaskTileWidget(),
-                              ),
-                              wrapWithModel(
-                                model: _model.taskTileModel3,
-                                updateCallback: () => safeSetState(() {}),
-                                child: const TaskTileWidget(),
-                              ),
-                              wrapWithModel(
-                                model: _model.taskTileModel4,
-                                updateCallback: () => safeSetState(() {}),
-                                child: const TaskTileWidget(),
-                              ),
-                              wrapWithModel(
-                                model: _model.taskTileModel5,
-                                updateCallback: () => safeSetState(() {}),
-                                child: const TaskTileWidget(),
-                              ),
-                              wrapWithModel(
-                                model: _model.taskTileModel6,
-                                updateCallback: () => safeSetState(() {}),
-                                child: const TaskTileWidget(),
-                              ),
-                              wrapWithModel(
-                                model: _model.taskTileModel7,
-                                updateCallback: () => safeSetState(() {}),
-                                child: const TaskTileWidget(),
-                              ),
-                              wrapWithModel(
-                                model: _model.taskTileModel8,
-                                updateCallback: () => safeSetState(() {}),
-                                child: const TaskTileWidget(),
-                              ),
-                              wrapWithModel(
-                                model: _model.taskTileModel9,
-                                updateCallback: () => safeSetState(() {}),
-                                child: const TaskTileWidget(),
-                              ),
-                            ],
-                          ),
+                          Obx(() {
+                            if (_taskController.isLoading.value) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+
+                            if (_taskController.errorMessage.value.isNotEmpty) {
+                              return Center(
+                                  child: Text(
+                                      'Error: ${_taskController.errorMessage.value}'));
+                            }
+
+                            final tasksForSelectedDate =
+                                _taskController.tasksForSelectedDate;
+
+                            if (tasksForSelectedDate.isEmpty) {
+                              return const Center(
+                                child: Text(
+                                    'No tasks available for the selected date'),
+                              );
+                            }
+
+                            return ListView.builder(
+                              itemCount: tasksForSelectedDate.length,
+                              itemBuilder: (context, index) {
+                                final task = tasksForSelectedDate[index];
+                                return TaskTileWidget(
+                                  title: task['title'] ?? 'Untitled Task',
+                                  tags: (task['tags'] is List<dynamic>
+                                          ? (task['tags'] as List<dynamic>)
+                                          : (task['tags'] is String
+                                              ? [task['tags']]
+                                              : []))
+                                      .cast<String>(),
+                                  dueDate: (task['dueDate'] != null)
+                                      ? (task['dueDate'] is String
+                                          ? DateTime.parse(task['dueDate'])
+                                          : (task['dueDate'] is Timestamp
+                                              ? (task['dueDate'] as Timestamp)
+                                                  .toDate()
+                                              : DateTime.now()))
+                                      : DateTime.now(),
+                                  isCompleted: task['isCompleted'] ?? false,
+                                );
+                              },
+                            );
+                          }),
                           const Column(
                             mainAxisSize: MainAxisSize.max,
-                            children: [],
+                            children: [Text("hello")],
                           ),
                           const Column(
                             mainAxisSize: MainAxisSize.max,
