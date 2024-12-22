@@ -82,12 +82,44 @@ class ShowRoutinesController extends GetxController {
     }
   }
 
-  // Method to toggle routine active status
+  // Add a method to update local state immediately
+  void updateRoutineStatus(String routineId, bool currentStatus) {
+    final newStatus = !currentStatus;
+
+    // Update in active/inactive lists immediately
+    if (currentStatus) {
+      // Moving from active to inactive
+      final routine = activeRoutines.firstWhere((r) => r.id == routineId);
+      activeRoutines.remove(routine);
+      inactiveRoutines.add(Routine(
+        id: routine.id,
+        name: routine.name,
+        active: newStatus,
+        dateAdded: routine.dateAdded,
+      ));
+    } else {
+      // Moving from inactive to active
+      final routine = inactiveRoutines.firstWhere((r) => r.id == routineId);
+      inactiveRoutines.remove(routine);
+      activeRoutines.add(Routine(
+        id: routine.id,
+        name: routine.name,
+        active: newStatus,
+        dateAdded: routine.dateAdded,
+      ));
+    }
+  }
+
+  // Update the toggle method to use the new update method
   Future<void> toggleRoutineStatus(String routineId, bool currentStatus) async {
     try {
+      // Update local state first
+      updateRoutineStatus(routineId, currentStatus);
+
       final String? uid = _auth.currentUser?.uid;
       if (uid == null) throw Exception('No authenticated user found');
 
+      // Then update in Firestore
       await _firestore
           .collection('routines')
           .doc(uid)
@@ -96,6 +128,8 @@ class ShowRoutinesController extends GetxController {
           .update({'active': !currentStatus});
     } catch (e) {
       print('Error toggling routine status: $e');
+      // Revert local state if there's an error
+      updateRoutineStatus(routineId, !currentStatus);
       throw e;
     }
   }
