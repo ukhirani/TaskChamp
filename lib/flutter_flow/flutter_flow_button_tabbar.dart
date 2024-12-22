@@ -756,12 +756,6 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
         return;
       }
       assert(() {
-        if (_controller!.length != widget.tabs.length) {
-          throw FlutterError(
-            "Controller's length property (${_controller!.length}) does not match the "
-            "number of tabs (${widget.tabs.length}) present in TabBar's tabs property.",
-          );
-        }
         return true;
       }());
     });
