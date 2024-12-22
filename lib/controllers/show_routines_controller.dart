@@ -99,4 +99,26 @@ class ShowRoutinesController extends GetxController {
       throw e;
     }
   }
+
+  Future<List<Map<String, dynamic>>> getRoutineTasks(String routineId) async {
+    try {
+      final String? uid = _auth.currentUser?.uid;
+      if (uid == null) throw Exception('No authenticated user found');
+
+      final tasksSnapshot = await _firestore
+          .collection('routines')
+          .doc(uid)
+          .collection('user_routines')
+          .doc(routineId)
+          .collection('tasks')
+          .get();
+
+      return tasksSnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      print('Error fetching routine tasks: $e');
+      return [];
+    }
+  }
 }

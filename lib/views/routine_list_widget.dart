@@ -66,7 +66,6 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
         ),
         body: Column(
           children: [
-            _buildAddRoutineButton(context),
             _buildTabBar(context),
             Expanded(
               child: TabBarView(
@@ -79,38 +78,20 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAddRoutineButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: FlutterFlowTheme.of(context).primary,
-          minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => Get.to(() => const AddRoutineWidget()),
+          label: Text(
+            'Add Routine',
+            style: FlutterFlowTheme.of(context).titleSmall.override(
+                  fontFamily: 'Plus Jakarta Sans',
+                  color: FlutterFlowTheme.of(context).primaryBackground,
+                ),
           ),
-        ),
-        onPressed: () => Get.to(() => const AddRoutineWidget()),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Add Routine',
-              style: FlutterFlowTheme.of(context).titleMedium.override(
-                    fontFamily: 'Plus Jakarta Sans',
-                    color: FlutterFlowTheme.of(context).primaryBackground,
-                  ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.add,
-              color: FlutterFlowTheme.of(context).primaryBackground,
-            ),
-          ],
+          icon: Icon(
+            Icons.add,
+            color: FlutterFlowTheme.of(context).primaryBackground,
+          ),
+          backgroundColor: FlutterFlowTheme.of(context).primary,
         ),
       ),
     );
@@ -167,29 +148,32 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
   }
 
   Widget _buildRoutineCard(Routine routine, bool isActive) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
-          boxShadow: const [
-            BoxShadow(
-              blurRadius: 3,
-              color: Color(0x33000000),
-              offset: Offset(0, 1),
-            )
-          ],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              _buildRoutineAvatar(routine, isActive),
-              _buildRoutineInfo(routine),
-              _buildOptionsButton(routine, isActive),
+    return InkWell(
+      onTap: () => _showRoutineDetails(routine, isActive),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: FlutterFlowTheme.of(context).secondaryBackground,
+            boxShadow: const [
+              BoxShadow(
+                blurRadius: 3,
+                color: Color(0x33000000),
+                offset: Offset(0, 1),
+              )
             ],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                _buildRoutineAvatar(routine, isActive),
+                _buildRoutineInfo(routine),
+                _buildOptionsButton(routine, isActive),
+              ],
+            ),
           ),
         ),
       ),
@@ -261,6 +245,84 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
       ),
+    );
+  }
+
+  void _showRoutineDetails(Routine routine, bool isActive) {
+    Get.bottomSheet(
+      Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).secondaryBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    routine.name,
+                    style: FlutterFlowTheme.of(context).headlineMedium,
+                  ),
+                  Switch(
+                    value: isActive,
+                    onChanged: (value) {
+                      controller.toggleRoutineStatus(routine.id, isActive);
+                      Get.back();
+                    },
+                    activeColor: FlutterFlowTheme.of(context).primary,
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            // Tasks List
+            Expanded(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: controller.getRoutineTasks(routine.id),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No tasks found',
+                        style: FlutterFlowTheme.of(context).labelMedium,
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      final task = snapshot.data![index];
+                      return ListTile(
+                        title: Text(task['title']),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Due Time: ${task['dueTime']}'),
+                            Text(
+                              'Repeats on: ${(task['selectedDays'] as List).join(", ")}',
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 }
