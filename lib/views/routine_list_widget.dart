@@ -190,6 +190,20 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
   }
 
   Widget _buildRoutineAvatar(Routine routine, bool isActive) {
+    // Check if routine name is empty before accessing first character
+    if (routine.name.isEmpty) {
+      return Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Color((isActive ? 0xFF3498db : 0xFF95a5a6)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.center,
+        child: const Icon(Icons.help_outline, color: Colors.white),
+      );
+    }
+
     return Container(
       width: 44,
       height: 44,
@@ -428,7 +442,7 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                task['title'],
+                                task['title'] ?? 'Untitled Task',
                                 style: FlutterFlowTheme.of(context)
                                     .titleMedium
                                     .override(
@@ -450,7 +464,7 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'Due at: ${task['dueTime']}',
+                                    'Due at: ${task['dueTime'] ?? 'Not set'}',
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -473,7 +487,7 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
-                                      'Repeats on: ${(task['selectedDays'] as List).join(", ")}',
+                                      'Repeats on: ${(task['selectedDays'] as List?)?.join(", ") ?? 'Not set'}',
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
