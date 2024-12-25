@@ -8,32 +8,18 @@ import '/flutter_flow/flutter_flow_button_tabbar.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'package:flutter/material.dart';
-import '../models/routine_list_model.dart';
-export '../models/routine_list_model.dart';
-
-import '/flutter_flow/flutter_flow_button_tabbar.dart';
 import '/flutter_flow/flutter_flow_choice_chips.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../models/routine_list_model.dart';
 import '../models/add_routine_model.dart';
 
-import '/flutter_flow/flutter_flow_choice_chips.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+export '../models/routine_list_model.dart';
 
 class Hello {
   String title;
@@ -544,8 +530,8 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                                               .primary,
                                                       icon: Icon(
                                                         Icons.add_rounded,
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
+                                                        color: FlutterFlowTheme.of(
+                                                                context)
                                                             .primaryBackground,
                                                         size: 24,
                                                       ),
@@ -809,7 +795,8 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                                   borderRadius:
                                                       BorderRadius.circular(12),
                                                 ),
-                                                errorBorder: OutlineInputBorder(
+                                                errorBorder:
+                                                    OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1.0,
@@ -835,53 +822,106 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                             actions: [
                                               TextButton(
                                                 onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: Text(
-                                                  'Cancel',
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Plus Jakarta Sans',
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                                ),
-                                              ),
-                                              TextButton(
-                                                onPressed: () {
-                                                  String routineName =
-                                                      routineNameController
-                                                          .text;
-                                                  print(routineName);
+                                                  try {
+                                                    String routineName =
+                                                        routineNameController
+                                                            .text;
+                                                    if (routineName.isEmpty) {
+                                                      throw Exception(
+                                                          "Routine name cannot be empty");
+                                                    }
 
-                                                  // print(tasks);
+                                                    print('Routine Name: $routineName');
+                                                    print('Tasks Length: ${tasks.length}');
 
-                                                  AddRoutineController
-                                                      _addRoutineController =
-                                                      Get.put(
-                                                          AddRoutineController());
-                                                  _addRoutineController
-                                                      .addRoutine(
-                                                    routineNameController.text,
-                                                    tasks
-                                                        .map((task) => {
-                                                              'title':
-                                                                  task.title,
-                                                              'dueTime':
-                                                                  task.dueTime,
-                                                              'selectedDays': task
-                                                                  .selectedDays,
+                                                    AddRoutineController
+                                                        _addRoutineController =
+                                                        Get.put(
+                                                            AddRoutineController());
+
+                                                    // Detailed logging for tasks
+                                                    if (tasks == null) {
+                                                      print('Tasks is null');
+                                                      throw Exception(
+                                                          "Tasks list is null");
+                                                    }
+
+                                                    if (tasks.isEmpty) {
+                                                      print('Tasks is empty');
+                                                      throw Exception(
+                                                          "Tasks cannot be empty");
+                                                    }
+
+                                                    // More detailed task logging
+                                                    tasks.forEach((task) {
+                                                      print('Task Title: ${task.title}');
+                                                      print('Task DueTime: ${task.dueTime}');
+                                                      print('Task Selected Days: ${task.selectedDays}');
+                                                    });
+
+                                                    // Convert tasks to the required format
+                                                    List<Map<String, dynamic>>
+                                                        formattedTasks = tasks
+                                                            .map((task) {
+                                                              // Validate each task before conversion
+                                                              if (task.title == null || task.title.isEmpty) {
+                                                                throw Exception('Task title cannot be empty');
+                                                              }
+                                                              if (task.dueTime == null || task.dueTime.isEmpty) {
+                                                                throw Exception('Task due time cannot be empty');
+                                                              }
+                                                              if (task.selectedDays == null || task.selectedDays.isEmpty) {
+                                                                throw Exception('Task selected days cannot be empty');
+                                                              }
+                                                              
+                                                              return {
+                                                                'title': task.title,
+                                                                'dueTime': task.dueTime,
+                                                                'selectedDays': task.selectedDays
+                                                              };
                                                             })
-                                                        .toList(),
-                                                  );
+                                                            .toList();
 
-                                                  // Use the routineName variable as needed
-                                                  Navigator.of(context).pop();
+                                                    // Call addRoutine with proper error handling
+                                                    _addRoutineController
+                                                        .addRoutine(
+                                                      routineName,
+                                                      formattedTasks,
+                                                    )
+                                                        .then((_) {
+                                                      // Successfully added routine
+                                                      // Use a safe navigation method
+                                                      if (mounted) {
+                                                        Navigator.of(context, rootNavigator: true)
+                                                            .pop();
+                                                        ScaffoldMessenger.of(context)
+                                                            .showSnackBar(SnackBar(
+                                                                content: Text(
+                                                                    'Routine added successfully')));
+                                                      }
+                                                    }).catchError((error) {
+                                                      // Handle any errors from addRoutine
+                                                      print('AddRoutine Error: $error');
+                                                      if (mounted) {
+                                                        ScaffoldMessenger.of(context)
+                                                            .showSnackBar(SnackBar(
+                                                                content: Text(
+                                                                    'Error adding routine: $error')));
+                                                      }
+                                                    });
+                                                  } catch (e) {
+                                                    // Handle any other exceptions
+                                                    print('Unexpected Error: $e');
+                                                    if (mounted) {
+                                                      ScaffoldMessenger.of(context)
+                                                          .showSnackBar(SnackBar(
+                                                              content: Text(
+                                                                  'Error: $e')));
+                                                    }
+                                                  }
                                                 },
                                                 child: Text(
-                                                  'Save',
+                                                  'Add',
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
@@ -906,10 +946,8 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                           0, 0, 0, 0),
                                       iconAlignment: IconAlignment.start,
                                       iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
+                                          EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                                      color: FlutterFlowTheme.of(context).primary,
                                       textStyle: FlutterFlowTheme.of(context)
                                           .titleSmall
                                           .override(

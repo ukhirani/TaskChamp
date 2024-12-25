@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -16,18 +18,37 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
-  // Ensure that Firebase is initialized before running the app
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
-  await FlutterFlowTheme.initialize();
+  // Global error handling
+  FlutterError.onError = (FlutterErrorDetails details) {
+    print('Caught Flutter Framework Error: ${details.exception}');
+    print('Stack Trace: ${details.stack}');
+    
+    // Optional: Log to a crash reporting service
+    // FirebaseCrashlytics.instance.recordFlutterError(details);
+  };
 
-  runApp(GetMaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: const MyApp(),
-  ));
+  // Catch any errors outside of the Flutter framework
+  runZonedGuarded(() async {
+    // Ensure that Firebase is initialized before running the app
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    await FlutterFlowTheme.initialize();
+
+    runApp(GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: const MyApp(),
+    ));
+  }, (error, stackTrace) {
+    // Catch any unhandled errors
+    print('Uncaught error: $error');
+    print('Stack trace: $stackTrace');
+    
+    // Optional: Log to a crash reporting service
+    // FirebaseCrashlytics.instance.recordError(error, stackTrace);
+  });
 }
 
 class MyApp extends StatefulWidget {
