@@ -12,6 +12,8 @@ class TaskTileWidget extends StatelessWidget {
   final List<String> tags;
   final DateTime dueDate;
   final bool isCompleted;
+  final bool isRoutine;
+  final Color routineColor;
 
   const TaskTileWidget({
     super.key,
@@ -19,16 +21,29 @@ class TaskTileWidget extends StatelessWidget {
     required this.tags,
     required this.dueDate,
     required this.isCompleted,
+    this.isRoutine = false,
+    this.routineColor = Colors.blue,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 100.0,
-      height: 103.0,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).primary,
-        borderRadius: BorderRadius.circular(30.0),
+        color: isRoutine ? routineColor.withOpacity(0.1) : FlutterFlowTheme.of(context).primary,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isRoutine ? routineColor : FlutterFlowTheme.of(context).primaryBackground,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.max,
@@ -49,8 +64,7 @@ class TaskTileWidget extends StatelessWidget {
                         title,
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               fontFamily: 'Plus Jakarta Sans',
-                              color: FlutterFlowTheme.of(context)
-                                  .primaryBackground,
+                              color: isRoutine ? routineColor : FlutterFlowTheme.of(context).primaryBackground,
                               fontSize: 40.0,
                               letterSpacing: 0.0,
                               fontWeight: FontWeight.w600,
@@ -114,7 +128,7 @@ class TaskTileWidget extends StatelessWidget {
                     textAlign: TextAlign.end,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Plus Jakarta Sans',
-                          color: FlutterFlowTheme.of(context).primaryBackground,
+                          color: isRoutine ? routineColor : FlutterFlowTheme.of(context).primaryBackground,
                           fontSize: 10.0,
                           letterSpacing: 0.0,
                           fontStyle: FontStyle.italic,

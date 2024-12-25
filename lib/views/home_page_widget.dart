@@ -401,6 +401,12 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                               : DateTime.now()))
                                       : DateTime.now(),
                                   isCompleted: task['isCompleted'] ?? false,
+                                  isRoutine: task['isRoutine'] ?? false,
+                                  routineColor: task['routineColor'] is int 
+                                      ? Color(task['routineColor']) 
+                                      : (task['routineColor'] is Color 
+                                          ? task['routineColor'] 
+                                          : Colors.blue),
                                 );
                               },
                             );

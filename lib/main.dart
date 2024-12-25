@@ -13,9 +13,22 @@ import 'flutter_flow/flutter_flow_util.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:floating_bottom_navigation_bar/floating_bottom_navigation_bar.dart';
 import 'index.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set edge-to-edge configuration
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent, // Transparent status bar
+    systemNavigationBarColor: Colors.transparent, // Transparent navigation bar
+    statusBarIconBrightness: Brightness.dark, // Dark status bar icons
+    systemNavigationBarIconBrightness: Brightness.dark, // Dark navigation bar icons
+  ));
+
+  // Enable edge-to-edge
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
@@ -96,6 +109,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'TaskChamp',
+      debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -105,10 +119,22 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: false,
+        appBarTheme: AppBarTheme(
+          // Remove default padding and make it edge-to-edge
+          toolbarHeight: kToolbarHeight,
+          titleSpacing: 0,
+          centerTitle: true,
+        ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: false,
+        appBarTheme: AppBarTheme(
+          // Remove default padding and make it edge-to-edge
+          toolbarHeight: kToolbarHeight,
+          titleSpacing: 0,
+          centerTitle: true,
+        ),
       ),
       themeMode: _themeMode,
       routerConfig: _router,

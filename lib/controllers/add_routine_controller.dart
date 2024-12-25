@@ -41,6 +41,12 @@ class AddRoutineController extends GetxController {
 
       // Add tasks collection under the routine
       for (var task in tasks) {
+        // Ensure consistent key for selected days
+        if (task.containsKey('selectedDays')) {
+          task['selected_days'] = task['selectedDays'];
+          task.remove('selectedDays');
+        }
+
         await userDocRef
             .collection('user_routines')
             .doc(routineId)

@@ -530,8 +530,8 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                                               .primary,
                                                       icon: Icon(
                                                         Icons.add_rounded,
-                                                        color: FlutterFlowTheme.of(
-                                                                context)
+                                                        color: FlutterFlowTheme
+                                                                .of(context)
                                                             .primaryBackground,
                                                         size: 24,
                                                       ),
@@ -795,8 +795,7 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                                   borderRadius:
                                                       BorderRadius.circular(12),
                                                 ),
-                                                errorBorder:
-                                                    OutlineInputBorder(
+                                                errorBorder: OutlineInputBorder(
                                                   borderSide: BorderSide(
                                                     color: Color(0x00000000),
                                                     width: 1.0,
@@ -831,8 +830,10 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                                           "Routine name cannot be empty");
                                                     }
 
-                                                    print('Routine Name: $routineName');
-                                                    print('Tasks Length: ${tasks.length}');
+                                                    print(
+                                                        'Routine Name: $routineName');
+                                                    print(
+                                                        'Tasks Length: ${tasks.length}');
 
                                                     AddRoutineController
                                                         _addRoutineController =
@@ -854,33 +855,46 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
 
                                                     // More detailed task logging
                                                     tasks.forEach((task) {
-                                                      print('Task Title: ${task.title}');
-                                                      print('Task DueTime: ${task.dueTime}');
-                                                      print('Task Selected Days: ${task.selectedDays}');
+                                                      print(
+                                                          'Task Title: ${task.title}');
+                                                      print(
+                                                          'Task DueTime: ${task.dueTime}');
+                                                      print(
+                                                          'Task Selected Days: ${task.selectedDays}');
                                                     });
 
                                                     // Convert tasks to the required format
                                                     List<Map<String, dynamic>>
-                                                        formattedTasks = tasks
-                                                            .map((task) {
-                                                              // Validate each task before conversion
-                                                              if (task.title == null || task.title.isEmpty) {
-                                                                throw Exception('Task title cannot be empty');
-                                                              }
-                                                              if (task.dueTime == null || task.dueTime.isEmpty) {
-                                                                throw Exception('Task due time cannot be empty');
-                                                              }
-                                                              if (task.selectedDays == null || task.selectedDays.isEmpty) {
-                                                                throw Exception('Task selected days cannot be empty');
-                                                              }
-                                                              
-                                                              return {
-                                                                'title': task.title,
-                                                                'dueTime': task.dueTime,
-                                                                'selectedDays': task.selectedDays
-                                                              };
-                                                            })
-                                                            .toList();
+                                                        formattedTasks =
+                                                        tasks.map((task) {
+                                                      // Validate each task before conversion
+                                                      if (task.title == null ||
+                                                          task.title.isEmpty) {
+                                                        throw Exception(
+                                                            'Task title cannot be empty');
+                                                      }
+                                                      if (task.dueTime ==
+                                                              null ||
+                                                          task.dueTime
+                                                              .isEmpty) {
+                                                        throw Exception(
+                                                            'Task due time cannot be empty');
+                                                      }
+                                                      if (task.selectedDays ==
+                                                              null ||
+                                                          task.selectedDays
+                                                              .isEmpty) {
+                                                        throw Exception(
+                                                            'Task selected days cannot be empty');
+                                                      }
+
+                                                      return {
+                                                        'title': task.title,
+                                                        'dueTime': task.dueTime,
+                                                        'selectedDays':
+                                                            task.selectedDays
+                                                      };
+                                                    }).toList();
 
                                                     // Call addRoutine with proper error handling
                                                     _addRoutineController
@@ -892,18 +906,23 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                                       // Successfully added routine
                                                       // Use a safe navigation method
                                                       if (mounted) {
-                                                        Navigator.of(context, rootNavigator: true)
+                                                        Navigator.of(context,
+                                                                rootNavigator:
+                                                                    true)
                                                             .pop();
-                                                        ScaffoldMessenger.of(context)
+                                                        ScaffoldMessenger.of(
+                                                                context)
                                                             .showSnackBar(SnackBar(
                                                                 content: Text(
                                                                     'Routine added successfully')));
                                                       }
                                                     }).catchError((error) {
                                                       // Handle any errors from addRoutine
-                                                      print('AddRoutine Error: $error');
+                                                      print(
+                                                          'AddRoutine Error: $error');
                                                       if (mounted) {
-                                                        ScaffoldMessenger.of(context)
+                                                        ScaffoldMessenger.of(
+                                                                context)
                                                             .showSnackBar(SnackBar(
                                                                 content: Text(
                                                                     'Error adding routine: $error')));
@@ -911,9 +930,11 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                                     });
                                                   } catch (e) {
                                                     // Handle any other exceptions
-                                                    print('Unexpected Error: $e');
+                                                    print(
+                                                        'Unexpected Error: $e');
                                                     if (mounted) {
-                                                      ScaffoldMessenger.of(context)
+                                                      ScaffoldMessenger.of(
+                                                              context)
                                                           .showSnackBar(SnackBar(
                                                               content: Text(
                                                                   'Error: $e')));
@@ -946,8 +967,10 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                           0, 0, 0, 0),
                                       iconAlignment: IconAlignment.start,
                                       iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                                      color: FlutterFlowTheme.of(context).primary,
+                                          EdgeInsetsDirectional.fromSTEB(
+                                              0, 0, 0, 0),
+                                      color:
+                                          FlutterFlowTheme.of(context).primary,
                                       textStyle: FlutterFlowTheme.of(context)
                                           .titleSmall
                                           .override(
