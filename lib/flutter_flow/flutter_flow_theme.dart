@@ -329,7 +329,7 @@ extension TextStyleHelper on TextStyle {
   }) =>
       useGoogleFonts
           ? GoogleFonts.getFont(
-              fontFamily!,
+              fontFamily ?? 'Urbanist',
               color: color ?? this.color,
               fontSize: fontSize ?? this.fontSize,
               letterSpacing: letterSpacing ?? this.letterSpacing,

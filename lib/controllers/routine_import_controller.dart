@@ -5,7 +5,9 @@ import 'add_routine_controller.dart';
 
 class RoutineImportController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // ignore: unused_field
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  // ignore: unused_field
   final AddRoutineController _addRoutineController =
       Get.find<AddRoutineController>();
 
@@ -50,6 +52,7 @@ class RoutineImportController extends GetxController {
   Future<void> importRoutine(String routineId) async {
     try {
       // Fetch the routine document
+      // ignore: unused_local_variable
       final routineDoc = await fetchRoutineById(routineId);
     } catch (e) {
       print('Error importing routine: $e');

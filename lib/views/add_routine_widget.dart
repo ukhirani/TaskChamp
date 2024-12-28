@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:task_champ/controllers/add_routine_controller.dart';
 import 'package:task_champ/controllers/routine_import_controller.dart';
@@ -1151,44 +1150,112 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
           builder: (BuildContext context) {
             final TextEditingController routineNameController =
                 TextEditingController();
-            return AlertDialog(
-              title: Text(
-                'Name Your Routine',
-                style: FlutterFlowTheme.of(context).titleLarge,
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              content: TextField(
-                controller: routineNameController,
-                decoration: InputDecoration(
-                  hintText: 'Enter routine name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                autofocus: true,
-              ),
-              actions: [
-                TextButton(
-                  child: Text('Cancel'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                ElevatedButton(
-                  child: Text('Create'),
-                  onPressed: () {
-                    final name = routineNameController.text.trim();
-                    if (name.isNotEmpty) {
-                      _model.textController1?.text = name;
-                      Navigator.of(context).pop();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Routine name cannot be empty'),
-                          backgroundColor: Colors.red,
+              elevation: 8,
+              backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+              child: Container(
+                padding: EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Name Your Routine',
+                      style:
+                          FlutterFlowTheme.of(context).headlineSmall.override(
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.0,
+                              ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Create a meaningful name for your new routine',
+                      style: FlutterFlowTheme.of(context).bodySmall.override(
+                            color: FlutterFlowTheme.of(context).secondaryText,
+                            letterSpacing: 0.0,
+                          ),
+                    ),
+                    SizedBox(height: 24),
+                    TextField(
+                      controller: routineNameController,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: 'Routine name',
+                        hintStyle: FlutterFlowTheme.of(context)
+                            .bodyMedium
+                            .override(
+                              letterSpacing: 0.0,
+                              color: FlutterFlowTheme.of(context).secondaryText,
+                            ),
+                        filled: true,
+                        fillColor:
+                            FlutterFlowTheme.of(context).primaryBackground,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
                         ),
-                      );
-                    }
-                  },
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      ),
+                      style: FlutterFlowTheme.of(context).bodyLarge.override(
+                            letterSpacing: 0.0,
+                          ),
+                    ),
+                    SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(
+                            'Cancel',
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText,
+                                  letterSpacing: 0.0,
+                                ),
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (routineNameController.text.isNotEmpty) {
+                              _model.textController1?.text =
+                                  routineNameController.text.trim();
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                FlutterFlowTheme.of(context).primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            elevation: 2,
+                          ),
+                          child: Text(
+                            'Create',
+                            style: FlutterFlowTheme.of(context)
+                                .titleSmall
+                                .override(
+                                  color: FlutterFlowTheme.of(context)
+                                      .primaryBackground,
+                                  letterSpacing: 0.0,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
             );
           },
         );
