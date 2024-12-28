@@ -374,9 +374,9 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                     alignment: WrapAlignment.start,
                                     controller:
                                         _model.choiceChipsValueController ??=
-                                            FormFieldController<List<String>>(
-                                      ['Fitness'],
-                                    ),
+                                            FormFieldController<List<String>>([
+                                      'Fitness',
+                                    ]),
                                     wrapped: true,
                                     multiSelect: true,
                                   ),
@@ -449,6 +449,40 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                           initialTime: TimeOfDay.fromDateTime(
                                               _model.datePicked ??
                                                   DateTime.now()),
+                                          builder: (context, child) {
+                                            return Theme(
+                                              data: ThemeData.dark().copyWith(
+                                                colorScheme: ColorScheme.dark(
+                                                  primary: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primary,
+                                                  surface: FlutterFlowTheme.of(
+                                                          context)
+                                                      .secondaryBackground,
+                                                ),
+                                                timePickerTheme:
+                                                    TimePickerThemeData(
+                                                  dayPeriodColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .primary
+                                                          .withOpacity(0.2),
+                                                  dayPeriodTextColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .primaryText,
+                                                  dayPeriodBorderSide:
+                                                      BorderSide(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primary,
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                              ),
+                                              child: child!,
+                                            );
+                                          },
                                         );
 
                                         if (timePicked != null) {
