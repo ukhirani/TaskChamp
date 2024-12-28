@@ -358,6 +358,44 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                                 await showTimePicker(
                                               context: context,
                                               initialTime: TimeOfDay.now(),
+                                              builder: (context, child) {
+                                                return Theme(
+                                                  data:
+                                                      ThemeData.dark().copyWith(
+                                                    colorScheme:
+                                                        ColorScheme.dark(
+                                                      primary:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primary,
+                                                      surface: FlutterFlowTheme
+                                                              .of(context)
+                                                          .secondaryBackground,
+                                                    ),
+                                                    timePickerTheme:
+                                                        TimePickerThemeData(
+                                                      dayPeriodColor:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primary
+                                                              .withOpacity(0.2),
+                                                      dayPeriodTextColor:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                      dayPeriodBorderSide:
+                                                          BorderSide(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primary,
+                                                        width: 2,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  child: child!,
+                                                );
+                                              },
                                             );
                                             if (newTime != null) {
                                               setState(() {
@@ -743,7 +781,7 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                                             .bodyMedium
                                             .override(
                                               fontFamily: 'Plus Jakarta Sans',
-                                              letterSpacing: 0,
+                                              letterSpacing: 0.0,
                                             ),
                                         hintStyle: FlutterFlowTheme.of(context)
                                             .bodyMedium
