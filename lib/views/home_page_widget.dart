@@ -384,29 +384,38 @@ class _HomePageWidgetState extends State<HomePageWidget>
                               itemCount: tasksForSelectedDate.length,
                               itemBuilder: (context, index) {
                                 final task = tasksForSelectedDate[index];
+                                print('Task data: $task'); // Debug print
                                 return TaskTileWidget(
                                   title: task['title'] ?? 'Untitled Task',
                                   tags: (task['tags'] is List<dynamic>
                                           ? (task['tags'] as List<dynamic>)
-                                          : (task['tags'] is String
-                                              ? [task['tags']]
-                                              : []))
+                                          : (task['tags'] as String?)
+                                                  ?.split(',')
+                                                  .map((e) => e.trim())
+                                                  .where((e) => e.isNotEmpty)
+                                                  .toList() ??
+                                              [])
                                       .cast<String>(),
-                                  dueDate: (task['dueDate'] != null)
-                                      ? (task['dueDate'] is String
-                                          ? DateTime.parse(task['dueDate'])
-                                          : (task['dueDate'] is Timestamp
-                                              ? (task['dueDate'] as Timestamp)
-                                                  .toDate()
-                                              : DateTime.now()))
+                                  dueDate: task['dueDate'] != null
+                                      ? (task['dueDate'] is DateTime
+                                          ? task['dueDate']
+                                          : (task['dueDate'] is Map
+                                              ? DateTime(
+                                                  task['dueDate']['year'],
+                                                  task['dueDate']['month'],
+                                                  task['dueDate']['day'],
+                                                  task['dueDate']['hour'] ?? 0,
+                                                  task['dueDate']['minute'] ??
+                                                      0)
+                                              : DateTime.parse(
+                                                  task['dueDate'].toString())))
                                       : DateTime.now(),
                                   isCompleted: task['isCompleted'] ?? false,
                                   isRoutine: task['isRoutine'] ?? false,
-                                  routineColor: task['routineColor'] is int 
-                                      ? Color(task['routineColor']) 
-                                      : (task['routineColor'] is Color 
-                                          ? task['routineColor'] 
-                                          : Colors.blue),
+                                  routineColor: Color(task['routineColor'] ??
+                                      Colors.blue.value),
+                                  routineName: task['routineName'] ??
+                                      '', // Pass routine name
                                 );
                               },
                             );

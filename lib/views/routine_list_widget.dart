@@ -39,6 +39,7 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         appBar: AppBar(
           backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
@@ -53,7 +54,7 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
               color: FlutterFlowTheme.of(context).primaryText,
               size: 30.0,
             ),
-            onPressed: () => context.pushNamed('HomePageWidget'),
+            onPressed: () => context.pushNamed('homePage'),
           ),
           title: Text(
             'Routines',
@@ -464,7 +465,7 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'Due at: ${task['dueTime'] ?? 'Not set'}',
+                                    'Due at: ${task['due_time'] ?? 'Not set'}',
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -487,7 +488,7 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
-                                      'Repeats on: ${(task['selectedDays'] as List?)?.join(", ") ?? 'Not set'}',
+                                      'Repeats on: ${(task['selected_days'] as List?)?.join(", ") ?? 'Not set'}',
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(

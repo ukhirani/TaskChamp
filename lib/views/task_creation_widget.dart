@@ -378,6 +378,7 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                                       ['Fitness'],
                                     ),
                                     wrapped: true,
+                                    multiSelect: true,
                                   ),
                                   Text(
                                     'Due Date',

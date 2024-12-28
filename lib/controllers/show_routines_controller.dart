@@ -147,9 +147,31 @@ class ShowRoutinesController extends GetxController {
           .collection('tasks')
           .get();
 
-      return tasksSnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+      return tasksSnapshot.docs.map((doc) {
+        final data = doc.data();
+        // Handle both selectedDays and selected_days fields
+        List<dynamic>? selectedDays;
+        if (data.containsKey('selected_days')) {
+          selectedDays = data['selected_days'];
+        } else if (data.containsKey('selectedDays')) {
+          selectedDays = data['selectedDays'];
+        }
+
+        // Handle both dueTime and due_time fields
+        String? dueTime;
+        if (data.containsKey('due_time')) {
+          dueTime = data['due_time'];
+        } else if (data.containsKey('dueTime')) {
+          dueTime = data['dueTime'];
+        }
+
+        return {
+          ...data,
+          'id': doc.id,
+          'selected_days': selectedDays ?? [],
+          'due_time': dueTime ?? '',
+        };
+      }).toList();
     } catch (e) {
       print('Error fetching routine tasks: $e');
       return [];

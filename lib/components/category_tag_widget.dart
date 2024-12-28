@@ -41,8 +41,10 @@ class _CategoryTagWidgetState extends State<CategoryTagWidget> {
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(0, 2, 2, 2),
       child: Container(
-        width: 60,
-        height: 22,
+        constraints: BoxConstraints(
+          minWidth: 40,
+          maxWidth: 120,
+        ),
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).primaryText,
           borderRadius: BorderRadius.circular(20),
@@ -52,26 +54,29 @@ class _CategoryTagWidgetState extends State<CategoryTagWidget> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.all(2),
+          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           child: Row(
-            mainAxisSize: MainAxisSize.max,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.circle,
                 color: FlutterFlowTheme.of(context).primaryBackground,
                 size: 15,
               ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(2, 0, 0, 0),
-                child: Text(
-                  widget.category, // Use the category value here
-                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                        fontFamily: 'Plus Jakarta Sans',
-                        color: FlutterFlowTheme.of(context).primaryBackground,
-                        fontSize: 10,
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.normal,
-                      ),
+              Flexible(
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(2, 0, 0, 0),
+                  child: Text(
+                    widget.category,
+                    overflow: TextOverflow.ellipsis,
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          fontFamily: 'Plus Jakarta Sans',
+                          color: FlutterFlowTheme.of(context).primaryBackground,
+                          fontSize: 10,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.normal,
+                        ),
+                  ),
                 ),
               ),
             ],

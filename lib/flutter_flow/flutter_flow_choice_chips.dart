@@ -49,6 +49,7 @@ class FlutterFlowChoiceChips extends StatefulWidget {
     this.alignment = WrapAlignment.start,
     this.disabledColor,
     this.wrapped = true,
+    required bool multiSelect,
   });
 
   final List<ChipData> options;

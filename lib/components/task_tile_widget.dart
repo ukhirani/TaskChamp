@@ -14,6 +14,7 @@ class TaskTileWidget extends StatelessWidget {
   final bool isCompleted;
   final bool isRoutine;
   final Color routineColor;
+  final String routineName;
 
   const TaskTileWidget({
     super.key,
@@ -23,6 +24,7 @@ class TaskTileWidget extends StatelessWidget {
     required this.isCompleted,
     this.isRoutine = false,
     this.routineColor = Colors.blue,
+    this.routineName = '',
   });
 
   @override
@@ -30,10 +32,10 @@ class TaskTileWidget extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: isRoutine ? routineColor.withOpacity(0.1) : FlutterFlowTheme.of(context).primary,
+        color: FlutterFlowTheme.of(context).primary,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isRoutine ? routineColor : FlutterFlowTheme.of(context).primaryBackground,
+          color: FlutterFlowTheme.of(context).primaryBackground,
           width: 1.5,
         ),
         boxShadow: [
@@ -49,45 +51,56 @@ class TaskTileWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 0.0, 0.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          0.0, 10.0, 0.0, 0.0),
-                      child: Text(
-                        title,
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              fontFamily: 'Plus Jakarta Sans',
-                              color: isRoutine ? routineColor : FlutterFlowTheme.of(context).primaryBackground,
-                              fontSize: 40.0,
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w600,
-                            ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        // Calculate the maximum width available for the text
-                        softWrap: false,
-                      ),
-                    );
-                  },
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 6.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: tags.map((tag) {
-                      return CategoryTagWidget(category: tag);
-                    }).toList(),
+          Expanded(
+            child: Padding(
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(15.0, 0.0, 0.0, 0.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 10.0, 0.0, 0.0),
+                        child: Text(
+                          title,
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    fontFamily: 'Plus Jakarta Sans',
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryBackground,
+                                    fontSize: 40.0,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: false,
+                        ),
+                      );
+                    },
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 4.0, 0.0, 6.0),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          if (isRoutine && routineName.isNotEmpty)
+                            CategoryTagWidget(category: routineName),
+                          ...tags.map((tag) {
+                            return CategoryTagWidget(category: tag);
+                          }).toList(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Padding(
@@ -128,7 +141,7 @@ class TaskTileWidget extends StatelessWidget {
                     textAlign: TextAlign.end,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Plus Jakarta Sans',
-                          color: isRoutine ? routineColor : FlutterFlowTheme.of(context).primaryBackground,
+                          color: FlutterFlowTheme.of(context).primaryBackground,
                           fontSize: 10.0,
                           letterSpacing: 0.0,
                           fontStyle: FontStyle.italic,
