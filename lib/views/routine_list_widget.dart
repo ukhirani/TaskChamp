@@ -4,6 +4,7 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../controllers/show_routines_controller.dart';
 import 'package:intl/intl.dart';
@@ -158,32 +159,44 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
   }
 
   Widget _buildRoutineCard(Routine routine, bool isActive) {
-    return InkWell(
+    return GestureDetector(
       onTap: () => _showRoutineDetails(routine, isActive),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
-            boxShadow: const [
-              BoxShadow(
-                blurRadius: 3,
-                color: Color(0x33000000),
-                offset: Offset(0, 1),
-              )
+      onLongPress: () {
+        // Copy routine ID to clipboard
+        Clipboard.setData(
+          ClipboardData(text: routine.id),
+        );
+
+        // Show a snackbar to confirm copying
+      },
+      child: _buildRoutineContainer(routine, isActive),
+    );
+  }
+
+  Widget _buildRoutineContainer(Routine routine, bool isActive) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).secondaryBackground,
+          boxShadow: const [
+            BoxShadow(
+              blurRadius: 3,
+              color: Color(0x33000000),
+              offset: Offset(0, 1),
+            )
+          ],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              _buildRoutineAvatar(routine, isActive),
+              _buildRoutineInfo(routine),
+              _buildOptionsButton(routine, isActive),
             ],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                _buildRoutineAvatar(routine, isActive),
-                _buildRoutineInfo(routine),
-                _buildOptionsButton(routine, isActive),
-              ],
-            ),
           ),
         ),
       ),
