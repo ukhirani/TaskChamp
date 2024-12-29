@@ -1,12 +1,19 @@
+import 'dart:async';
+import 'dart:io' show Platform;
+
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:task_champ/components/navbar_widget.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:task_champ/index.dart';
+import 'package:task_champ/components/navbar_widget.dart';
+import 'package:task_champ/controllers/health_data_controller.dart';
+import 'package:task_champ/flutter_flow/flutter_flow_util.dart';
+import 'package:task_champ/views/login_sign_up_widget.dart';
+import 'package:go_router/go_router.dart';
+import 'package:task_champ/flutter_flow/nav/nav.dart';
+import 'package:task_champ/main.dart';
 
 class LoginSignUpController extends GetxController {
   var email = ''.obs;
@@ -19,6 +26,23 @@ class LoginSignUpController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+
+  // Health data tracking
+  HealthDataController get healthDataController =>
+      Get.find<HealthDataController>();
+
+  // Example method to use health data
+  Future<void> logHealthMetrics() async {
+    // Fetch health data
+    await healthDataController.fetchHealthData();
+
+    // Access health metrics
+    print('Steps today: ${healthDataController.steps.value}');
+    print('Weight: ${healthDataController.weight.value}');
+    print('Height: ${healthDataController.height.value}');
+    print(
+        'Active Energy Burned: ${healthDataController.activeEnergyBurned.value}');
+  }
 
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
@@ -72,6 +96,26 @@ class LoginSignUpController extends GetxController {
     isLoading.value = true;
 
     try {
+      // Request location permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          Get.snackbar(
+              'Permissions Required', 'Location access is needed to continue');
+          isLoading.value = false;
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        Get.snackbar('Permissions Blocked',
+            'Please enable location permissions in app settings');
+        isLoading.value = false;
+        return;
+      }
+
+      // Create user in Firebase Authentication
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -80,22 +124,49 @@ class LoginSignUpController extends GetxController {
 
       String uid = userCredential.user!.uid;
 
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+      // Get current location
+      Position? position;
+      try {
+        position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 10));
+      } catch (locationError) {
+        print('Location retrieval error: $locationError');
+        // Continue signup even if location can't be retrieved
+        position = null;
+      }
 
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      // Prepare user data
+      Map<String, dynamic> userData = {
         'UID': uid,
         'date_joined': FieldValue.serverTimestamp(),
-        'location': GeoPoint(position.latitude, position.longitude),
-        'name': 'Umang',
-      });
+        'name': 'Umang', // Consider adding a name input during signup
+        'permissions': {
+          'location': position != null,
+          'notifications': false, // Add more permissions as needed
+        }
+      };
 
+      // Add location if available
+      if (position != null) {
+        userData['location'] = GeoPoint(position.latitude, position.longitude);
+      }
+
+      // Save user data to Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .set(userData);
+
+      // Send verification email
       await sendMail(userCredential.user!.email!);
 
-      Get.snackbar('Success', 'Signup Successful');
-      //hello
+      Get.snackbar('Success', 'Signup Successful. Please verify your email.');
+    } on FirebaseAuthException catch (authError) {
+      // More specific error handling for authentication
+      handleAuthError(authError.code);
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', 'Signup failed: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }
@@ -208,7 +279,20 @@ class LoginSignUpController extends GetxController {
   Future<void> logout() async {
     await FirebaseAuth.instance.signOut();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false); // Clear login status
-    Get.offAll(() => LoginSignUpWidget()); // Navigate to login page
+    await prefs.setBool('isLoggedIn', false);
+    Get.offAll(() => const MyApp(),
+        transition: Transition.fadeIn,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut);
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
   }
 }

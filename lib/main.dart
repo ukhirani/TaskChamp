@@ -14,16 +14,21 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:floating_bottom_navigation_bar/floating_bottom_navigation_bar.dart';
 import 'index.dart';
 import 'package:flutter/services.dart';
+import 'package:task_champ/controllers/health_data_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Register HealthDataController before running the app
+  Get.put(HealthDataController());
+
   // Set edge-to-edge configuration
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
     statusBarColor: Colors.transparent, // Transparent status bar
     systemNavigationBarColor: Colors.transparent, // Transparent navigation bar
     statusBarIconBrightness: Brightness.dark, // Dark status bar icons
-    systemNavigationBarIconBrightness: Brightness.dark, // Dark navigation bar icons
+    systemNavigationBarIconBrightness:
+        Brightness.dark, // Dark navigation bar icons
   ));
 
   // Enable edge-to-edge
@@ -36,7 +41,7 @@ void main() async {
   FlutterError.onError = (FlutterErrorDetails details) {
     print('Caught Flutter Framework Error: ${details.exception}');
     print('Stack Trace: ${details.stack}');
-    
+
     // Optional: Log to a crash reporting service
     // FirebaseCrashlytics.instance.recordFlutterError(details);
   };
@@ -58,7 +63,7 @@ void main() async {
     // Catch any unhandled errors
     print('Uncaught error: $error');
     print('Stack trace: $stackTrace');
-    
+
     // Optional: Log to a crash reporting service
     // FirebaseCrashlytics.instance.recordError(error, stackTrace);
   });

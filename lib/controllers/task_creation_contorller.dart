@@ -555,13 +555,95 @@ class TaskController extends GetxController {
         final taskDoc =
             querySnapshot.docs.firstWhere((doc) => doc['title'] == title);
 
-        await taskDoc.reference.update({'isCompleted': !isCompleted});
+        // Update task completion status
+        await taskDoc.reference.update({
+          'isCompleted': !isCompleted,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        // Regenerate routine tasks to ensure consistency
+        await generateRoutineTasks(dueDate);
+
+        // Fetch updated tasks for the date
+        final updatedQuerySnapshot =
+            await tasksCollection.collection(dateStr).get();
+
+        // Fetch active routines to filter tasks
+        final routinesSnapshot = await _firestore
+            .collection('routines')
+            .doc(userId)
+            .collection('user_routines')
+            .where('active', isEqualTo: true)
+            .get();
+
+        final activeRoutineIds =
+            routinesSnapshot.docs.map((doc) => doc.id).toList();
+
+        // Process tasks
+        var processedTasks = updatedQuerySnapshot.docs
+            .map((doc) {
+              final taskData = doc.data();
+              return {
+                'id': doc.id,
+                'title': taskData['title'] ?? 'Untitled Task',
+                'description': taskData['description'] ?? '',
+                'tags': taskData['tags'] ?? [],
+                'dueDate': _parseDueDateFromTaskData(dueDate, taskData),
+                'isCompleted': taskData['isCompleted'] ?? false,
+                'isRoutine': taskData['isRoutine'] ?? false,
+                'routineId': taskData['routineId'] ?? '',
+                'routineColor': taskData['routineColor'] ?? Colors.blue.value,
+                'routineName': taskData['routineName'] ?? '',
+              };
+            })
+            .where((task) =>
+                // Include non-routine tasks
+                !(task['isRoutine'] as bool) ||
+                // Include routine tasks only if their routine is active
+                ((task['isRoutine'] as bool) &&
+                    activeRoutineIds.contains(task['routineId'])))
+            .toList();
+
+        // Update tasks with processed list
+        tasksForSelectedDate.value = processedTasks;
+
+        // Sort tasks
+        sortTasks();
+
         print('Task updated successfully');
       } else {
         print('User is not logged in');
       }
     } catch (e) {
       print('Error updating task: $e');
+    }
+  }
+
+  void sortTasks() {
+    if (tasksForSelectedDate.value.isNotEmpty) {
+      tasksForSelectedDate.value.sort((a, b) {
+        // First, prioritize incomplete tasks
+        if (a['isCompleted'] == false && b['isCompleted'] == true) {
+          return -1;
+        }
+        if (a['isCompleted'] == true && b['isCompleted'] == false) {
+          return 1;
+        }
+
+        // If both have the same completion status, sort by due date
+        DateTime? dateA = a['dueDate'] is DateTime ? a['dueDate'] : null;
+        DateTime? dateB = b['dueDate'] is DateTime ? b['dueDate'] : null;
+
+        // If both dates are null, maintain original order
+        if (dateA == null && dateB == null) return 0;
+
+        // If one date is null, prioritize the non-null date
+        if (dateA == null) return 1;
+        if (dateB == null) return -1;
+
+        // Compare dates
+        return dateA.compareTo(dateB);
+      });
     }
   }
 }

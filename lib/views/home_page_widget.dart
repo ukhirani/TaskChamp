@@ -8,7 +8,9 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import '../models/home_page_model.dart';
+import 'package:task_champ/views/profile_page_widget.dart';
 export '../models/home_page_model.dart';
 
 class HomePageWidget extends StatefulWidget {
@@ -235,19 +237,26 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 0, 10, 0),
+                            GestureDetector(
+                              onTap: () =>
+                                  Get.to(() => const ProfilePageWidget()),
                               child: Container(
-                                width: 40,
-                                height: 40,
-                                clipBehavior: Clip.antiAlias,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
+                                constraints: const BoxConstraints(
+                                  maxWidth: 40,
+                                  maxHeight: 40,
                                 ),
-                                child: Image.network(
-                                  'https://images.unsplash.com/photo-1633332755192-727a05c4013d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwyNHx8dXNlcnxlbnwwfHx8fDE3MzIwOTMzMTl8MA&ixlib=rb-4.0.3&q=80&w=1080',
-                                  fit: BoxFit.cover,
+                                margin: const EdgeInsets.only(right: 12),
+                                child: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: FlutterFlowTheme.of(context)
+                                      .primaryColor
+                                      .withOpacity(0.2),
+                                  child: Icon(
+                                    Icons.person,
+                                    color: FlutterFlowTheme.of(context)
+                                        .primaryColor,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ),
@@ -359,63 +368,85 @@ class _HomePageWidgetState extends State<HomePageWidget>
                         controller: _model.tabBarController,
                         children: [
                           Obx(() {
+                            // Show loading animation while tasks are being fetched
                             if (_taskController.isLoading.value) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
+                              return Center(
+                                child: Lottie.asset(
+                                  'assets/tick.json',
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.contain,
+                                  repeat: true,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    print('Lottie animation error: $error');
+                                    print(
+                                        'Lottie animation stackTrace: $stackTrace');
+                                    return Text(
+                                      'Loading...',
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium,
+                                    );
+                                  },
+                                  frameBuilder: (context, child, composition) {
+                                    if (composition == null) {
+                                      print('Lottie composition is null');
+                                      return Text(
+                                        'Loading animation...',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium,
+                                      );
+                                    }
+                                    return child;
+                                  },
+                                ),
+                              );
                             }
 
+                            // Show error message if there's an error
                             if (_taskController.errorMessage.value.isNotEmpty) {
                               return Center(
-                                  child: Text(
-                                      'Error: ${_taskController.errorMessage.value}'));
+                                child: Text(
+                                  _taskController.errorMessage.value,
+                                  style:
+                                      FlutterFlowTheme.of(context).bodyMedium,
+                                ),
+                              );
                             }
 
-                            final tasksForSelectedDate =
-                                _taskController.tasksForSelectedDate;
-
-                            if (tasksForSelectedDate.isEmpty) {
-                              return const Center(
+                            // Show tasks if available
+                            final tasks = _taskController.tasksForSelectedDate;
+                            if (tasks.isEmpty) {
+                              return Center(
                                 child: Text(
-                                    'No tasks available for the selected date'),
+                                  'No tasks for today',
+                                  style:
+                                      FlutterFlowTheme.of(context).bodyMedium,
+                                ),
                               );
                             }
 
                             return ListView.builder(
-                              itemCount: tasksForSelectedDate.length,
+                              itemCount: tasks.length,
                               itemBuilder: (context, index) {
-                                final task = tasksForSelectedDate[index];
-                                print('Task data: $task'); // Debug print
+                                final task = tasks[index];
                                 return TaskTileWidget(
-                                  title: task['title'] ?? 'Untitled Task',
-                                  tags: (task['tags'] is List<dynamic>
-                                          ? (task['tags'] as List<dynamic>)
-                                          : (task['tags'] as String?)
-                                                  ?.split(',')
-                                                  .map((e) => e.trim())
-                                                  .where((e) => e.isNotEmpty)
-                                                  .toList() ??
-                                              [])
-                                      .cast<String>(),
-                                  dueDate: task['dueDate'] != null
-                                      ? (task['dueDate'] is DateTime
-                                          ? task['dueDate']
-                                          : (task['dueDate'] is Map
-                                              ? DateTime(
-                                                  task['dueDate']['year'],
-                                                  task['dueDate']['month'],
-                                                  task['dueDate']['day'],
-                                                  task['dueDate']['hour'] ?? 0,
-                                                  task['dueDate']['minute'] ??
-                                                      0)
-                                              : DateTime.parse(
-                                                  task['dueDate'].toString())))
-                                      : DateTime.now(),
+                                  title: task['title'],
+                                  tags: task['tags'] is String
+                                      ? (task['tags'] as String)
+                                          .split(',')
+                                          .map((e) => e.trim())
+                                          .where((e) => e.isNotEmpty)
+                                          .toList()
+                                      : (task['tags'] as List<dynamic>?)
+                                              ?.map((e) => e.toString())
+                                              .toList() ??
+                                          [],
+                                  dueDate: task['dueDate'] ?? DateTime.now(),
                                   isCompleted: task['isCompleted'] ?? false,
                                   isRoutine: task['isRoutine'] ?? false,
+                                  routineName: task['routineName'] ?? '',
                                   routineColor: Color(task['routineColor'] ??
                                       Colors.blue.value),
-                                  routineName: task['routineName'] ??
-                                      '', // Pass routine name
                                 );
                               },
                             );
