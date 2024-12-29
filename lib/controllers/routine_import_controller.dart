@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'add_routine_controller.dart';
 
@@ -54,6 +55,16 @@ class RoutineImportController extends GetxController {
       // Fetch the routine document
       // ignore: unused_local_variable
       final routineDoc = await fetchRoutineById(routineId);
+
+      if (routineDoc != null) {
+        final addRoutineController = Get.find<AddRoutineController>();
+        await addRoutineController.addRoutine(
+          routineDoc['title'],
+          routineDoc['tasks'],
+        );
+      } else {
+        throw Exception('Routine not found');
+      }
     } catch (e) {
       print('Error importing routine: $e');
       rethrow;

@@ -79,6 +79,314 @@ class TaskController extends GetxController {
     }
   }
 
+  /// Prevent multiple task generations in a short time window
+  DateTime? _lastTaskGenerationTime;
+  static const Duration _taskGenerationCooldown = Duration(milliseconds: 100);
+
+  /// Track generated tasks to prevent duplicates within the same generation cycle
+  final Set<String> _generatedTaskUniqueIds = {};
+
+  /// Generate routine tasks for a specific date with debounce and duplicate prevention
+  Future<List<Map<String, dynamic>>> generateRoutineTasks(
+      DateTime targetDate) async {
+    // Clear previous generated task tracking
+    _generatedTaskUniqueIds.clear();
+
+    // Prevent frequent task generation for the exact same call
+    if (_lastTaskGenerationTime != null) {
+      final timeSinceLastGeneration =
+          DateTime.now().difference(_lastTaskGenerationTime!);
+      if (timeSinceLastGeneration < _taskGenerationCooldown) {
+        print('🛑 [TaskController] Task generation too frequent. Skipping.');
+        return [];
+      }
+    }
+
+    // Update last generation time
+    _lastTaskGenerationTime = DateTime.now();
+
+    final user = _auth.currentUser;
+    if (user == null) {
+      print('🚨 [TaskController] No authenticated user found');
+      return [];
+    }
+
+    final userId = user.uid;
+    final formattedDate = targetDate.toIso8601String().split('T')[0];
+    final currentDayName = _getDayName(targetDate);
+
+    print('🔍 [TaskController] Generating Routine Tasks');
+    print('🕒 Target Date: $formattedDate (${currentDayName})');
+
+    // Fetch active routines
+    final routinesSnapshot = await _firestore
+        .collection('routines')
+        .doc(userId)
+        .collection('user_routines')
+        .where('active', isEqualTo: true)
+        .get();
+
+    print('📊 Active Routines Found: ${routinesSnapshot.docs.length}');
+
+    List<Map<String, dynamic>> generatedTasks = [];
+
+    // Process each active routine
+    for (var routineDoc in routinesSnapshot.docs) {
+      final routineId = routineDoc.id;
+      final routineData = routineDoc.data();
+      final routineName = routineData['routine_name'] ?? 'Unnamed Routine';
+      final routineColor = routineData['routine_color'] ?? Colors.blue.value;
+      final routineSelectedDays = routineData['selected_days'] ?? [];
+
+      print('\n📋 Processing Routine: $routineName (ID: $routineId)');
+      print('🗓️ Routine Selected Days: $routineSelectedDays');
+
+      // Fetch tasks for this routine
+      final routineTasksSnapshot = await _firestore
+          .collection('routines')
+          .doc(userId)
+          .collection('user_routines')
+          .doc(routineId)
+          .collection('tasks')
+          .get();
+
+      print('📝 Tasks in Routine: ${routineTasksSnapshot.docs.length}');
+
+      // Process each routine task
+      for (var routineTaskDoc in routineTasksSnapshot.docs) {
+        final routineTaskData = routineTaskDoc.data();
+        final routineTaskId = routineTaskDoc.id;
+        final taskUniqueId = routineTaskData['task_unique_id'];
+
+        // Determine selected days, prioritize task-specific days over routine days
+        final selectedDays =
+            _extractSelectedDays(routineTaskData) ?? routineSelectedDays;
+
+        print('\n🔬 Task Details:');
+        print('📌 Title: ${routineTaskData['title']}');
+        print('📆 Task Selected Days: $selectedDays');
+        print('🆔 Task Unique ID: $taskUniqueId');
+
+        // Check if task should be generated for this date
+        if (selectedDays != null && _isDayMatch(selectedDays, targetDate)) {
+          // More comprehensive existing task check
+          final existingTaskQuery = await _firestore
+              .collection('tasks')
+              .doc(userId)
+              .collection(formattedDate)
+              .where('task_unique_id', isEqualTo: taskUniqueId)
+              .get();
+
+          print(
+              '🕵️ Existing Tasks for this date: ${existingTaskQuery.docs.length}');
+
+          // Generate task if no existing task with the same unique ID
+          if (existingTaskQuery.docs.isEmpty) {
+            final taskToGenerate = _prepareRoutineTask(
+                routineTaskData,
+                routineId,
+                routineTaskId,
+                routineName,
+                routineColor,
+                targetDate,
+                currentDayName);
+
+            generatedTasks.add(taskToGenerate);
+            print('✅ New Task Generated: ${taskToGenerate['title']}');
+          } else {
+            print('❌ Task with Unique ID Already Exists, Skipping');
+          }
+        } else {
+          print('❌ Task Not Matched for this Date');
+        }
+      }
+    }
+
+    // Persist generated tasks to Firestore
+    await _persistGeneratedTasks(userId, formattedDate, generatedTasks);
+
+    print('📊 Total Tasks Generated: ${generatedTasks.length}');
+    return generatedTasks;
+  }
+
+  /// Reset last task generation time (useful for testing)
+  void resetLastTaskGenerationTime() {
+    _lastTaskGenerationTime = null;
+    _generatedTaskUniqueIds.clear();
+  }
+
+  /// Extract selected days from various possible fields
+  List<String>? _extractSelectedDays(Map<String, dynamic> routineTaskData) {
+    const possibleDayFields = [
+      'selected_days',
+      'days',
+      'weekdays',
+      'selectedDays'
+    ];
+
+    for (var field in possibleDayFields) {
+      final days = routineTaskData[field];
+      if (days != null && days is List) {
+        return days.map((day) => day.toString()).toList();
+      }
+    }
+
+    return null;
+  }
+
+  /// Prepare routine task data
+  Map<String, dynamic> _prepareRoutineTask(
+    Map<String, dynamic> routineTaskData,
+    String routineId,
+    String routineTaskId,
+    String routineName,
+    int routineColor,
+    DateTime targetDate,
+    String currentDayName,
+  ) {
+    // Parse due time
+    String? dueTime = routineTaskData['due_time'] ?? routineTaskData['dueTime'];
+    DateTime? dueDateTime;
+
+    if (dueTime != null) {
+      try {
+        final timeParts = dueTime.toString().split(':');
+        if (timeParts.length >= 2) {
+          final hour = int.parse(timeParts[0]);
+          final minute = int.parse(timeParts[1]);
+
+          dueDateTime = DateTime(
+              targetDate.year, targetDate.month, targetDate.day, hour, minute);
+        }
+      } catch (e) {
+        print('Error parsing due time: $e');
+      }
+    }
+
+    return {
+      'title': routineTaskData['title'] ?? 'Routine Task',
+      'description': routineTaskData['description'] ?? '',
+      'dueTime': dueTime ?? '',
+      'dueDate': dueDateTime?.toIso8601String(),
+      'isCompleted': false,
+      'isRoutine': true,
+      'routineId': routineId,
+      'routineTaskId': routineTaskId,
+      'routineColor': routineColor,
+      'routineName': routineName,
+      'tags': routineTaskData['tags'] ?? [],
+      'selectedDays': routineTaskData['selected_days'] ?? [],
+      'currentDay': currentDayName,
+      'task_unique_id': routineTaskData['task_unique_id'],
+    };
+  }
+
+  /// Persist generated tasks to Firestore
+  Future<void> _persistGeneratedTasks(
+    String userId,
+    String formattedDate,
+    List<Map<String, dynamic>> tasks,
+  ) async {
+    for (var task in tasks) {
+      await _firestore
+          .collection('tasks')
+          .doc(userId)
+          .collection(formattedDate)
+          .add(task);
+    }
+  }
+
+  /// Existing day matching method
+  bool _isDayMatch(List<dynamic> selectedDays, DateTime date) {
+    // Precise day mappings with strict matching
+    const dayMappings = {
+      'M': ['Monday', 'Mon'],
+      'T': ['Tuesday', 'Tue'],
+      'W': ['Wednesday', 'Wed'],
+      'Th': ['Thursday', 'Thu'],
+      'F': ['Friday', 'Fri'],
+      'Sa': ['Saturday', 'Sat'],
+      'Su': ['Sunday', 'Sun']
+    };
+
+    // Day abbreviations and their corresponding day numbers
+    const dayNumberMappings = {
+      'M': 1, // Monday
+      'T': 2, // Tuesday
+      'W': 3, // Wednesday
+      'Th': 4, // Thursday
+      'F': 5, // Friday
+      'Sa': 6, // Saturday
+      'Su': 7 // Sunday
+    };
+
+    final currentDayAbbr =
+        ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'][date.weekday - 1];
+    final currentDayName = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ][date.weekday - 1];
+
+    print('Day Matching Debug:');
+    print('Current Day Abbreviation: $currentDayAbbr');
+    print('Current Day Name: $currentDayName');
+    print('Selected Days: $selectedDays');
+
+    final matchResult = selectedDays.any((day) {
+      // Convert to string to handle potential non-string inputs
+      final normalizedDay = day.toString().trim();
+
+      // Strict matching logic
+      bool isMatch = false;
+
+      // Exact match with current day abbreviation or name
+      if (normalizedDay.toLowerCase() == currentDayAbbr.toLowerCase() ||
+          normalizedDay.toLowerCase() == currentDayName.toLowerCase()) {
+        isMatch = true;
+      }
+
+      // Check against predefined day mappings
+      else if (dayMappings[normalizedDay]?.contains(currentDayName) ?? false) {
+        isMatch = true;
+      }
+
+      // Additional checks for specific day variations
+      else if (normalizedDay.toLowerCase() == 's' &&
+          currentDayName.toLowerCase() == 'sunday' &&
+          !selectedDays.contains('Su')) {
+        isMatch = true;
+      } else if (normalizedDay.toLowerCase() == 'sa' &&
+          currentDayName.toLowerCase() == 'saturday') {
+        isMatch = true;
+      }
+
+      print('Checking Day: $normalizedDay, Match: $isMatch');
+      return isMatch;
+    });
+
+    print('Final Match Result: $matchResult');
+    return matchResult;
+  }
+
+  /// Existing method to get day name
+  String _getDayName(DateTime date) {
+    final days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+    return days[date.weekday - 1];
+  }
+
   /// Listen for real-time updates for tasks on a specific date
   void listenToTasksForDate(DateTime date) {
     try {
@@ -89,123 +397,29 @@ class TaskController extends GetxController {
       if (user != null) {
         final userId = user.uid;
         final formattedDate = date.toIso8601String().split('T')[0];
-        final currentDayName = _getDayName(date);
 
-        // Listen to both user-created and routine tasks
         _firestore
             .collection('tasks')
             .doc(userId)
             .collection(formattedDate)
             .snapshots()
             .listen((querySnapshot) async {
-          // Fetch active routines to filter routine tasks
-          final routinesSnapshot = await _firestore
-              .collection('routines')
-              .doc(userId)
-              .collection('user_routines')
-              .where('active', isEqualTo: true)
-              .get();
-
-          // Generate routine tasks for the specific date
-          for (var routineDoc in routinesSnapshot.docs) {
-            final routineId = routineDoc.id;
-            final routineData = routineDoc.data();
-            final routineColor =
-                routineData['routine_color'] ?? Colors.blue.value;
-            final routineName =
-                routineData['routine_name'] ?? 'Unnamed Routine';
-
-            // Fetch tasks for this routine
-            final routineTasksSnapshot = await _firestore
-                .collection('routines')
-                .doc(userId)
-                .collection('user_routines')
-                .doc(routineId)
-                .collection('tasks')
-                .get();
-
-            for (var routineTaskDoc in routineTasksSnapshot.docs) {
-              final routineTaskData = routineTaskDoc.data();
-
-              dynamic selectedDays;
-              const possibleDayFields = [
-                'selected_days',
-                'days',
-                'weekdays',
-                'selectedDays'
-              ];
-
-              // Try to find a non-null day field
-              for (var field in possibleDayFields) {
-                selectedDays = routineTaskData[field];
-                if (selectedDays != null && selectedDays is List) break;
-              }
-
-              if (selectedDays != null && _isDayMatch(selectedDays, date)) {
-                // Check if task already exists for this date and routine
-                final existingTaskQuery = await _firestore
-                    .collection('tasks')
-                    .doc(userId)
-                    .collection(formattedDate)
-                    .where('routineId', isEqualTo: routineId)
-                    .where('routineTaskId', isEqualTo: routineTaskDoc.id)
-                    .get();
-
-                if (existingTaskQuery.docs.isEmpty) {
-                  // Parse due time from routine task
-                  String? dueTime = routineTaskData['due_time'];
-                  String? dueTimeString;
-
-                  if (dueTime != null) {
-                    try {
-                      // Try to parse the due time
-                      final timeParts = dueTime.toString().split(':');
-                      if (timeParts.length >= 2) {
-                        final hour = int.parse(timeParts[0]);
-                        final minute = int.parse(timeParts[1]);
-
-                        // Create a DateTime with the parsed time
-                        final dueDateTime = DateTime(
-                            date.year, date.month, date.day, hour, minute);
-
-                        // Convert to ISO8601 string for storage
-                        dueTimeString = dueDateTime.toIso8601String();
-                      }
-                    } catch (e) {
-                      print('Error parsing due time: $e');
-                    }
-                  }
-
-                  // Generate routine task
-                  await _firestore
-                      .collection('tasks')
-                      .doc(userId)
-                      .collection(formattedDate)
-                      .add({
-                    'title': routineTaskData['title'] ?? 'Routine Task',
-                    'description': routineTaskData['description'] ?? '',
-                    'dueTime': dueTime ?? '',
-                    'dueDate': dueTimeString,
-                    'isCompleted': false,
-                    'isRoutine': true,
-                    'routineId': routineId,
-                    'routineTaskId': routineTaskDoc.id,
-                    'routineColor': routineColor,
-                    'routineName': routineName,
-                    'tags': routineTaskData['tags'] ?? [],
-                    'selectedDays': selectedDays,
-                    'currentDay': currentDayName,
-                  });
-                }
-              }
-            }
-          }
+          // Generate routine tasks for the date
+          await generateRoutineTasks(date);
 
           // Fetch tasks again after generating routine tasks
           final updatedQuerySnapshot = await _firestore
               .collection('tasks')
               .doc(userId)
               .collection(formattedDate)
+              .get();
+
+          // Fetch active routines to filter tasks
+          final routinesSnapshot = await _firestore
+              .collection('routines')
+              .doc(userId)
+              .collection('user_routines')
+              .where('active', isEqualTo: true)
               .get();
 
           final activeRoutineIds =
@@ -325,65 +539,6 @@ class TaskController extends GetxController {
       print('Error parsing due time: $e');
     }
     return date;
-  }
-
-  /// Helper method to get day name
-  String _getDayName(DateTime date) {
-    const days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ];
-    const abbreviations = ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'];
-    return days[date.weekday - 1];
-  }
-
-  // Helper method to check if day matches
-  bool _isDayMatch(List<dynamic> selectedDays, DateTime date) {
-    // Comprehensive day mapping
-    const dayMappings = {
-      'M': ['Monday', 'Mon'],
-      'T': ['Tuesday', 'Tue'],
-      'W': ['Wednesday', 'Wed'],
-      'Th': ['Thursday', 'Thu'],
-      'F': ['Friday', 'Fri'],
-      'Sa': ['Saturday', 'Sat'],
-      'Su': ['Sunday', 'Sun']
-    };
-
-    // Get the current day's abbreviations and full names
-    final currentDayAbbr =
-        ['M', 'T', 'W', 'Th', 'F', 'Sa', 'Su'][date.weekday - 1];
-    final currentDayName = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ][date.weekday - 1];
-
-    print('Debug - Current Day Abbr: $currentDayAbbr');
-    print('Debug - Current Day Name: $currentDayName');
-    print('Debug - Selected Days: $selectedDays');
-
-    // Check if any of the selected days match the current day
-    for (var day in selectedDays) {
-      print('Checking day: $day');
-      if (day == currentDayAbbr ||
-          (dayMappings[day]?.contains(currentDayName) ?? false)) {
-        print('Day Match Found!');
-        return true;
-      }
-    }
-
-    print('No Day Match');
-    return false;
   }
 
   /// Update a task's completion status

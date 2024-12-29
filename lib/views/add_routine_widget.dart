@@ -1048,7 +1048,25 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
                         Padding(
                           padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                           child: FFButtonWidget(
-                            onPressed: _addRoutine,
+                            onPressed: () async {
+                              final addRoutineController =
+                                  Get.find<AddRoutineController>();
+                              await addRoutineController.addRoutine(
+                                  importedRoutineName!, // Use the imported routine name
+                                  tasks
+                                      .map((task) => {
+                                            'title': task
+                                                .title, // Correct task title
+                                            'due_time': task.dueTime,
+                                            'selected_days': task.selectedDays
+                                          })
+                                      .toList());
+                              _model.textController1?.clear();
+                              tasks.clear();
+                              importedRoutineName =
+                                  null; // Reset imported routine name to null
+                              setState(() {});
+                            },
                             text: 'Add Routine',
                             options: FFButtonOptions(
                               width: MediaQuery.sizeOf(context).width * 0.728,
@@ -1162,7 +1180,6 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
         });
 
         // Clear the text field
-        _model.textController3?.clear();
 
         return;
       }
@@ -1318,7 +1335,6 @@ class _AddRoutineWidgetState extends State<AddRoutineWidget>
         };
       }).toList();
 
-      // Add routine
       final addRoutineController = Get.find<AddRoutineController>();
       await addRoutineController.addRoutine(
         _model.textController1!.text.trim(),
