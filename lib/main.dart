@@ -15,9 +15,18 @@ import 'package:floating_bottom_navigation_bar/floating_bottom_navigation_bar.da
 import 'index.dart';
 import 'package:flutter/services.dart';
 import 'package:task_champ/controllers/health_data_controller.dart';
+import 'package:task_champ/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Initialize Notification Service
+  await NotificationService().init();
 
   // Register HealthDataController before running the app
   Get.put(HealthDataController());
@@ -48,11 +57,6 @@ void main() async {
 
   // Catch any errors outside of the Flutter framework
   runZonedGuarded(() async {
-    // Ensure that Firebase is initialized before running the app
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-
     await FlutterFlowTheme.initialize();
 
     runApp(GetMaterialApp(

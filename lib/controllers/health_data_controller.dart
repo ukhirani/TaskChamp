@@ -91,32 +91,51 @@ class HealthDataController extends GetxController {
     try {
       // Check Health Connect availability first
       final isAvailable = await checkHealthConnectAvailability();
-      debugPrint('Health Connect Available: $isAvailable');
+      debugPrint('🔍 Health Connect Availability Check: $isAvailable');
 
       if (!isAvailable) {
-        debugPrint('Health Connect is not available on this device');
+        debugPrint('❌ Health Connect is not available on this device');
         return;
       }
 
       // Request Health Connect permissions via platform channel
-      final result =
-          await _healthConnectChannel.invokeMethod('requestPermissions');
-      debugPrint('Health Connect Permissions Result: $result');
+      try {
+        final result =
+            await _healthConnectChannel.invokeMethod('requestPermissions');
+        debugPrint('✅ Health Connect Permissions Result: $result');
+      } on PlatformException catch (e) {
+        debugPrint('❌ Platform Exception in Health Connect Permissions');
+        debugPrint('Error Code: ${e.code}');
+        debugPrint('Error Message: ${e.message}');
+        debugPrint('Error Details: ${e.details}');
+      }
     } catch (e) {
-      debugPrint('Error requesting Health Connect permissions: $e');
+      debugPrint('❌ Unexpected Error in Health Connect Permissions: $e');
     }
   }
 
   // Check Health Connect availability
   Future<bool> checkHealthConnectAvailability() async {
     try {
-      if (!Platform.isAndroid) return false;
+      if (!Platform.isAndroid) {
+        debugPrint('❌ Not an Android platform');
+        return false;
+      }
 
-      final result = await _healthConnectChannel
-          .invokeMethod<bool>('checkHealthConnectAvailability');
-      return result ?? false;
+      try {
+        final result = await _healthConnectChannel
+            .invokeMethod<bool>('checkHealthConnectAvailability');
+        debugPrint('🔍 Health Connect Availability Raw Result: $result');
+        return result ?? false;
+      } on PlatformException catch (e) {
+        debugPrint('❌ Platform Exception in Health Connect Availability');
+        debugPrint('Error Code: ${e.code}');
+        debugPrint('Error Message: ${e.message}');
+        debugPrint('Error Details: ${e.details}');
+        return false;
+      }
     } catch (e) {
-      debugPrint('Error checking Health Connect availability: $e');
+      debugPrint('❌ Unexpected Error in Health Connect Availability Check: $e');
       return false;
     }
   }
@@ -236,11 +255,13 @@ class HealthDataController extends GetxController {
 }
 
 class HealthConnectDataController {
-  static const MethodChannel _channel = MethodChannel('com.taskchamp.health_connect');
+  static const MethodChannel _channel =
+      MethodChannel('com.taskchamp.health_connect');
 
   Future<bool> checkHealthConnectAvailability() async {
     try {
-      final bool isAvailable = await _channel.invokeMethod('checkHealthConnectAvailability');
+      final bool isAvailable =
+          await _channel.invokeMethod('checkHealthConnectAvailability');
       print('Health Connect Availability: $isAvailable');
       return isAvailable;
     } on PlatformException catch (e) {
@@ -252,7 +273,8 @@ class HealthConnectDataController {
 
   Future<bool> requestHealthConnectPermissions() async {
     try {
-      final bool permissionsGranted = await _channel.invokeMethod('requestPermissions');
+      final bool permissionsGranted =
+          await _channel.invokeMethod('requestPermissions');
       print('Health Connect Permissions Requested: $permissionsGranted');
       return permissionsGranted;
     } on PlatformException catch (e) {
@@ -262,18 +284,16 @@ class HealthConnectDataController {
     }
   }
 
-  Future<int> getSteps({
-    required DateTime startTime, 
-    required DateTime endTime
-  }) async {
+  Future<int> getSteps(
+      {required DateTime startTime, required DateTime endTime}) async {
     try {
       final int steps = await _channel.invokeMethod('getSteps', {
         'startTime': startTime.millisecondsSinceEpoch,
         'endTime': endTime.millisecondsSinceEpoch,
       });
-      
+
       print('Steps fetched: $steps');
-      
+
       return steps;
     } on PlatformException catch (e) {
       print('Error fetching steps');

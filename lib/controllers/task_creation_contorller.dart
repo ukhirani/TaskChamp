@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../services/notification_service.dart';
 import '../components/navbar_widget.dart';
 
 class TaskController extends GetxController {
@@ -450,6 +452,15 @@ class TaskController extends GetxController {
                       activeRoutineIds.contains(task['routineId'])))
               .toList();
 
+          // Check deadline notifications for today's tasks
+          if (_isDateToday(date)) {
+            checkTaskDeadlineNotifications(DateTime.now());
+          }
+
+          isLoading.value = false;
+        }, onError: (error) {
+          print('Error listening to tasks: $error');
+          errorMessage.value = error.toString();
           isLoading.value = false;
         });
       } else {
@@ -460,6 +471,62 @@ class TaskController extends GetxController {
       errorMessage.value = 'Failed to listen to tasks: $e';
       isLoading.value = false;
     }
+  }
+
+  /// Check if the given date is today
+  bool _isDateToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
+
+  /// Check and send notifications for tasks approaching or past deadline
+  void checkTaskDeadlineNotifications(DateTime currentDate) {
+    final now = currentDate;
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final todayEnd = todayStart.add(Duration(days: 1));
+
+    // Iterate through tasks for today
+    for (var taskData in tasksForSelectedDate) {
+      final dueDate = _parseDueDateFromTaskData(now, taskData);
+
+      // Skip if due date is not today or task is already completed
+      if (dueDate == null ||
+          dueDate.isBefore(todayStart) ||
+          dueDate.isAfter(todayEnd) ||
+          taskData['isCompleted'] == true) {
+        continue;
+      }
+
+      // Calculate time difference
+      final timeDiff = dueDate.difference(now);
+
+      // Notification for tasks approaching deadline (5 minutes before)
+      if (timeDiff.inMinutes <= 5 && timeDiff.inMinutes > 0) {
+        _sendNotification(
+          title: 'Task Approaching Deadline',
+          body: 'Task "${taskData['title']}" is due in less than 5 minutes',
+        );
+      }
+
+      // Notification for tasks past deadline
+      if (now.isAfter(dueDate)) {
+        _sendNotification(
+          title: 'Overdue Task',
+          body: 'Task "${taskData['title']}" is past its deadline',
+        );
+      }
+    }
+  }
+
+  /// Send local notification
+  void _sendNotification({required String title, required String body}) {
+    // Use NotificationService to send notifications
+    NotificationService().showTaskNotification(
+      title: title,
+      body: body,
+    );
   }
 
   /// Parse due date from task data

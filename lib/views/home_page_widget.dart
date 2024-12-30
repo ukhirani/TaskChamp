@@ -82,8 +82,14 @@ class _HomePageWidgetState extends State<HomePageWidget>
                     topLeft: Radius.circular(0),
                     topRight: Radius.circular(0),
                   ),
-                  border: Border.all(
-                    color: FlutterFlowTheme.of(context).primary,
+                  border: Border(
+                    top: BorderSide.none,
+                    bottom:
+                        BorderSide(color: FlutterFlowTheme.of(context).primary),
+                    left:
+                        BorderSide(color: FlutterFlowTheme.of(context).primary),
+                    right:
+                        BorderSide(color: FlutterFlowTheme.of(context).primary),
                   ),
                 ),
                 child: Align(
@@ -249,13 +255,12 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                 child: CircleAvatar(
                                   radius: 20,
                                   backgroundColor: FlutterFlowTheme.of(context)
-                                      .primaryColor
+                                      .primary
                                       .withOpacity(0.2),
                                   child: Icon(
-                                    Icons.person,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryColor,
-                                    size: 20,
+                                    Icons.account_circle_rounded,
+                                    color: FlutterFlowTheme.of(context).primary,
+                                    size: 30,
                                   ),
                                 ),
                               ),

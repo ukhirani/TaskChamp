@@ -4,6 +4,7 @@ import 'package:task_champ/flutter_flow/flutter_flow_theme.dart';
 import 'package:task_champ/flutter_flow/flutter_flow_widgets.dart';
 import 'package:task_champ/controllers/login_sign_up_controller.dart';
 import 'package:task_champ/controllers/health_data_controller.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePageWidget extends StatefulWidget {
   const ProfilePageWidget({Key? key}) : super(key: key);
@@ -30,7 +31,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
     return Scaffold(
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       appBar: AppBar(
-        backgroundColor: FlutterFlowTheme.of(context).primary,
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_rounded,
@@ -41,21 +42,13 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
         title: Text(
           'Profile',
           style: FlutterFlowTheme.of(context).headlineMedium.override(
-                fontFamily: 'Outfit',
+                fontFamily: 'Urbanist',
                 color: FlutterFlowTheme.of(context).primaryText,
               ),
         ),
         centerTitle: true,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.edit,
-              color: FlutterFlowTheme.of(context).primaryText,
-            ),
-            onPressed: _showEditProfileBottomSheet,
-          ),
-        ],
+        // Removed edit button
       ),
       body: RefreshIndicator(
         onRefresh: () => healthController.fetchHealthData(),
@@ -67,30 +60,33 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Profile Picture with Gradient
+                // Profile Picture without Gradient
                 Container(
                   width: 140,
                   height: 140,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        FlutterFlowTheme.of(context).primary.withOpacity(0.7),
-                        FlutterFlowTheme.of(context).primary.withOpacity(0.3),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: FlutterFlowTheme.of(context).primaryBackground,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: FlutterFlowTheme.of(context).primary,
-                      width: 3,
+                      color:
+                          FlutterFlowTheme.of(context).primary.withOpacity(0.5),
+                      width: 2,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: FlutterFlowTheme.of(context)
+                            .primary
+                            .withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Center(
                     child: Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 80,
+                      Icons.account_circle_rounded,
+                      color: FlutterFlowTheme.of(context).primary,
+                      size: 100,
                     ),
                   ),
                 ),
@@ -99,11 +95,13 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                 Padding(
                   padding: const EdgeInsetsDirectional.fromSTEB(0, 16, 0, 0),
                   child: Text(
-                    loginController.emailController.text,
-                    style: FlutterFlowTheme.of(context).titleLarge.override(
-                          fontFamily: 'Outfit',
+                    FirebaseAuth.instance.currentUser?.email ?? 'No email',
+                    style: FlutterFlowTheme.of(context).titleMedium.override(
+                          fontFamily: 'Urbanist',
                           color: FlutterFlowTheme.of(context).primaryText,
+                          fontWeight: FontWeight.w500,
                         ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
 
@@ -116,13 +114,10 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                           color:
                               FlutterFlowTheme.of(context).secondaryBackground,
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
+                          border: Border.all(
+                            color: FlutterFlowTheme.of(context).alternate,
+                            width: 1,
+                          ),
                         ),
                         child: Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(
@@ -135,7 +130,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                 style: FlutterFlowTheme.of(context)
                                     .titleMedium
                                     .override(
-                                      fontFamily: 'Outfit',
+                                      fontFamily: 'Urbanist',
                                       fontWeight: FontWeight.bold,
                                     ),
                               ),
@@ -145,28 +140,28 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                 'Steps Today',
                                 healthController.steps.value.toString(),
                                 Icons.directions_walk,
-                                color: Colors.green,
+                                color: FlutterFlowTheme.of(context).primary,
                               ),
                               _buildHealthMetricRow(
                                 context,
                                 'Weight',
                                 '${healthController.weight.value.toStringAsFixed(1)} kg',
                                 Icons.monitor_weight,
-                                color: Colors.blue,
+                                color: FlutterFlowTheme.of(context).secondary,
                               ),
                               _buildHealthMetricRow(
                                 context,
                                 'Height',
                                 '${healthController.height.value.toStringAsFixed(1)} cm',
                                 Icons.height,
-                                color: Colors.purple,
+                                color: FlutterFlowTheme.of(context).tertiary,
                               ),
                               _buildHealthMetricRow(
                                 context,
                                 'Active Energy Burned',
                                 '${healthController.activeEnergyBurned.value.toStringAsFixed(1)} cal',
                                 Icons.local_fire_department,
-                                color: Colors.orange,
+                                color: FlutterFlowTheme.of(context).error,
                               ),
                             ],
                           ),
@@ -186,7 +181,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                       color: FlutterFlowTheme.of(context).error,
                       textStyle:
                           FlutterFlowTheme.of(context).titleSmall.override(
-                                fontFamily: 'Outfit',
+                                fontFamily: 'Urbanist',
                                 color: Colors.white,
                               ),
                       elevation: 3,
@@ -219,6 +214,10 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: color.withOpacity(0.3),
+            width: 1,
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -238,7 +237,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                       padding: const EdgeInsets.all(8.0),
                       child: Icon(
                         icon,
-                        color: Colors.white,
+                        color: FlutterFlowTheme.of(context).primaryBackground,
                         size: 20,
                       ),
                     ),
@@ -248,7 +247,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                     child: Text(
                       label,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            fontFamily: 'Outfit',
+                            fontFamily: 'Urbanist',
                             fontWeight: FontWeight.w500,
                           ),
                     ),
@@ -258,9 +257,8 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
               Text(
                 value,
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
-                      fontFamily: 'Outfit',
-                      fontWeight: FontWeight.bold,
-                      color: color,
+                      fontFamily: 'Urbanist',
+                      fontWeight: FontWeight.w600,
                     ),
               ),
             ],
@@ -295,7 +293,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                 height: 50,
                 color: FlutterFlowTheme.of(context).primary,
                 textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                      fontFamily: 'Outfit',
+                      fontFamily: 'Urbanist',
                       color: Colors.white,
                     ),
                 borderRadius: BorderRadius.circular(12),
