@@ -1,10 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../services/notification_service.dart';
+import 'package:task_champ/services/notification_service.dart';
 import '../components/navbar_widget.dart';
 
 class TaskController extends GetxController {
@@ -483,49 +484,132 @@ class TaskController extends GetxController {
 
   /// Check and send notifications for tasks approaching or past deadline
   void checkTaskDeadlineNotifications(DateTime currentDate) {
-    final now = currentDate;
-    final todayStart = DateTime(now.year, now.month, now.day);
-    final todayEnd = todayStart.add(Duration(days: 1));
-
-    // Iterate through tasks for today
-    for (var taskData in tasksForSelectedDate) {
-      final dueDate = _parseDueDateFromTaskData(now, taskData);
-
-      // Skip if due date is not today or task is already completed
-      if (dueDate == null ||
-          dueDate.isBefore(todayStart) ||
-          dueDate.isAfter(todayEnd) ||
-          taskData['isCompleted'] == true) {
-        continue;
-      }
+    for (var taskData in tasks) {
+      // Parse due date from task data
+      final dueDate = _parseDueDateFromTaskData(currentDate, taskData);
 
       // Calculate time difference
-      final timeDiff = dueDate.difference(now);
+      final timeDiff = dueDate.difference(currentDate);
 
       // Notification for tasks approaching deadline (5 minutes before)
       if (timeDiff.inMinutes <= 5 && timeDiff.inMinutes > 0) {
         _sendNotification(
           title: 'Task Approaching Deadline',
           body: 'Task "${taskData['title']}" is due in less than 5 minutes',
+          data: {
+            'taskId': taskData['id'],
+            'taskTitle': taskData['title'],
+            'type': 'task_deadline_approaching',
+          },
         );
       }
 
       // Notification for tasks past deadline
-      if (now.isAfter(dueDate)) {
+      if (currentDate.isAfter(dueDate)) {
         _sendNotification(
           title: 'Overdue Task',
           body: 'Task "${taskData['title']}" is past its deadline',
+          data: {
+            'taskId': taskData['id'],
+            'taskTitle': taskData['title'],
+            'type': 'task_overdue',
+          },
         );
       }
     }
   }
 
-  /// Send local notification
-  void _sendNotification({required String title, required String body}) {
-    // Use NotificationService to send notifications
-    NotificationService().showTaskNotification(
-      title: title,
-      body: body,
+  /// Modify the existing method to include FCM notification
+  Future<void> updateTaskInDatabase(
+      DateTime dueDate, String title, bool isCompleted) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final userId = user.uid;
+        final tasksCollection = _firestore.collection('tasks').doc(userId);
+        final dateStr = dueDate.toIso8601String().split('T')[0];
+
+        final querySnapshot = await tasksCollection.collection(dateStr).get();
+        final taskDoc =
+            querySnapshot.docs.firstWhere((doc) => doc['title'] == title);
+
+        // Update task completion status
+        await taskDoc.reference.update({
+          'isCompleted': !isCompleted,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        // Send notification based on task status
+        if (!isCompleted) {
+          // Task marked as complete
+          _sendTaskCompletionNotification({
+            'id': taskDoc.id,
+            'title': title,
+          });
+        } else {
+          // Task marked as incomplete
+          _sendNotification(
+            title: 'Task Status Updated',
+            body: 'Task "${title}" has been marked as incomplete',
+            data: {
+              'taskId': taskDoc.id,
+              'taskTitle': title,
+              'type': 'task_incomplete',
+              'userId': userId,
+            },
+          );
+        }
+      }
+    } catch (e) {
+      print('Error updating task: $e');
+    }
+  }
+
+  // Method to send motivational notifications using FCM
+  void _sendNotification({
+    required String title,
+    required String body,
+    Map<String, dynamic>? data,
+  }) {
+    try {
+      // Use NotificationService to send FCM notification
+      NotificationService().sendTaskNotification(
+        title: title,
+        body: body,
+        data: data ?? {},
+      );
+    } catch (e) {
+      debugPrint('Notification sending error in controller: $e');
+    }
+  }
+
+  // Enhanced method to send task completion notification
+  void _sendTaskCompletionNotification(Map<String, dynamic> task) {
+    // List of motivational messages for task completion
+    final motivationalMessages = [
+      'Great job completing your task! 🎉',
+      'You\'re making progress! Keep it up! 💪',
+      'Another task done. You\'re unstoppable! 🚀',
+      'Congratulations on completing your task! 🌟',
+      'One step closer to your goals! 🏆',
+    ];
+
+    // Randomly select a motivational message
+    final randomMessage = motivationalMessages[
+        DateTime.now().millisecondsSinceEpoch % motivationalMessages.length];
+
+    // Prepare notification data
+    final notificationData = {
+      'taskId': task['id'],
+      'taskTitle': task['title'],
+      'type': 'task_completion',
+    };
+
+    // Send notification with task title and motivational message
+    _sendNotification(
+      title: 'Task Completed: ${task['title']}',
+      body: randomMessage,
+      data: notificationData,
     );
   }
 
@@ -606,84 +690,6 @@ class TaskController extends GetxController {
       print('Error parsing due time: $e');
     }
     return date;
-  }
-
-  /// Update a task's completion status
-  void updateTaskInDatabase(
-      DateTime dueDate, String title, bool isCompleted) async {
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        final userId = user.uid;
-        final tasksCollection = _firestore.collection('tasks').doc(userId);
-        final dateStr = dueDate.toIso8601String().split('T')[0];
-
-        final querySnapshot = await tasksCollection.collection(dateStr).get();
-        final taskDoc =
-            querySnapshot.docs.firstWhere((doc) => doc['title'] == title);
-
-        // Update task completion status
-        await taskDoc.reference.update({
-          'isCompleted': !isCompleted,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-
-        // Regenerate routine tasks to ensure consistency
-        await generateRoutineTasks(dueDate);
-
-        // Fetch updated tasks for the date
-        final updatedQuerySnapshot =
-            await tasksCollection.collection(dateStr).get();
-
-        // Fetch active routines to filter tasks
-        final routinesSnapshot = await _firestore
-            .collection('routines')
-            .doc(userId)
-            .collection('user_routines')
-            .where('active', isEqualTo: true)
-            .get();
-
-        final activeRoutineIds =
-            routinesSnapshot.docs.map((doc) => doc.id).toList();
-
-        // Process tasks
-        var processedTasks = updatedQuerySnapshot.docs
-            .map((doc) {
-              final taskData = doc.data();
-              return {
-                'id': doc.id,
-                'title': taskData['title'] ?? 'Untitled Task',
-                'description': taskData['description'] ?? '',
-                'tags': taskData['tags'] ?? [],
-                'dueDate': _parseDueDateFromTaskData(dueDate, taskData),
-                'isCompleted': taskData['isCompleted'] ?? false,
-                'isRoutine': taskData['isRoutine'] ?? false,
-                'routineId': taskData['routineId'] ?? '',
-                'routineColor': taskData['routineColor'] ?? Colors.blue.value,
-                'routineName': taskData['routineName'] ?? '',
-              };
-            })
-            .where((task) =>
-                // Include non-routine tasks
-                !(task['isRoutine'] as bool) ||
-                // Include routine tasks only if their routine is active
-                ((task['isRoutine'] as bool) &&
-                    activeRoutineIds.contains(task['routineId'])))
-            .toList();
-
-        // Update tasks with processed list
-        tasksForSelectedDate.value = processedTasks;
-
-        // Sort tasks
-        sortTasks();
-
-        print('Task updated successfully');
-      } else {
-        print('User is not logged in');
-      }
-    } catch (e) {
-      print('Error updating task: $e');
-    }
   }
 
   void sortTasks() {

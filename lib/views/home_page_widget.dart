@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../models/home_page_model.dart';
 import 'package:task_champ/views/profile_page_widget.dart';
+import 'package:task_champ/views/priority_tools_widget.dart';
 export '../models/home_page_model.dart';
 
 class HomePageWidget extends StatefulWidget {
@@ -356,7 +357,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                             text: 'Tasks',
                           ),
                           Tab(
-                            text: 'Priority ',
+                            text: 'Utilities',
                           ),
                           Tab(
                             text: 'Stats',
@@ -456,10 +457,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
                               },
                             );
                           }),
-                          const Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [Text("hello")],
-                          ),
+                          PriorityToolsWidget(),
                           const Column(
                             mainAxisSize: MainAxisSize.max,
                             children: [],

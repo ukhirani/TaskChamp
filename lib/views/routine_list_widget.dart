@@ -1,3 +1,4 @@
+import 'package:task_champ/components/navbar_widget.dart';
 import 'package:task_champ/views/add_routine_widget.dart';
 import '/flutter_flow/flutter_flow_button_tabbar.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -55,7 +56,9 @@ class _RoutineListWidgetState extends State<RoutineListWidget>
               color: FlutterFlowTheme.of(context).primaryText,
               size: 30.0,
             ),
-            onPressed: () => context.pushNamed('homePage'),
+            onPressed: () {
+              Get.offAll(() => NavBarPage(initialPage: 'HomePage'));
+            },
           ),
           title: Text(
             'Routines',

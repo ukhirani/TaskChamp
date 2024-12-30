@@ -1,3 +1,5 @@
+import 'package:task_champ/components/navbar_widget.dart';
+
 import '/flutter_flow/flutter_flow_choice_chips.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -92,8 +94,8 @@ class _TaskCreationWidgetState extends State<TaskCreationWidget> {
                   color: FlutterFlowTheme.of(context).primaryText,
                   size: 24.0,
                 ),
-                onPressed: () async {
-                  context.pushNamed('HomePage');
+                onPressed: () {
+                  Get.offAll(() => NavBarPage(initialPage: 'HomePage'));
                 },
               ),
             ),
